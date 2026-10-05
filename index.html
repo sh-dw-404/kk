@@ -1,556 +1,1360 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
-<title>Our Little Universe — Virtual Birthday Date</title>
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1,
+               maximum-scale=1,
+               user-scalable=no,
+               viewport-fit=cover">
+
+<meta name="theme-color" content="#050615">
+
+<title>Our Little Universe — Birthday Date</title>
 
 <style>
+
+/* ============================================================
+   GLOBAL
+============================================================ */
+
+:root{
+    --glass:rgba(7,8,25,.68);
+    --line:rgba(255,255,255,.16);
+    --pink:#ff63ad;
+    --purple:#8c6cff;
+}
+
 *{
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,
+body{
     margin:0;
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#02030b;
+
+    background:#02030a;
     color:white;
-    font-family:Arial,Helvetica,sans-serif;
+
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+
     touch-action:none;
 }
 
 canvas{
-    display:block;
-    width:100%;
-    height:100%;
-}
-
-#loading{
     position:fixed;
     inset:0;
+
+    width:100%;
+    height:100%;
+
+    display:block;
+}
+
+button{
+    font:inherit;
+}
+
+.hidden{
+    display:none!important;
+}
+
+
+/* ============================================================
+   LOADING / WELCOME / ENDING
+============================================================ */
+
+#loading,
+#welcome,
+#ending{
+
+    position:fixed;
+    inset:0;
+
     z-index:1000;
+
     display:flex;
-    flex-direction:column;
+
     align-items:center;
     justify-content:center;
+
+    text-align:center;
+
     background:
-        radial-gradient(circle at center,#21114f 0%,#09071c 45%,#010207 100%);
-    transition:opacity 1s;
+        radial-gradient(
+            circle at 50% 42%,
+            #2a1758,
+            #090719 48%,
+            #010207
+        );
+
+    padding:24px;
 }
 
-#loading h1{
-    font-size:clamp(28px,8vw,64px);
-    margin:0 0 10px;
-    text-align:center;
-    letter-spacing:2px;
-}
+.panel{
 
-#loading p{
-    opacity:.7;
-    text-align:center;
-}
+    width:min(92vw,680px);
 
-.loader{
-    width:220px;
-    height:5px;
-    border-radius:10px;
-    background:#ffffff18;
-    overflow:hidden;
-    margin-top:25px;
-}
+    padding:28px;
 
-.loader div{
-    height:100%;
-    width:0;
-    background:linear-gradient(90deg,#ff65c7,#9f7cff,#65dfff);
-    transition:width .3s;
-}
+    border:
+        1px solid
+        var(--line);
 
-#hud{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:20;
-}
+    border-radius:24px;
 
-#topbar{
-    position:absolute;
-    top:env(safe-area-inset-top,12px);
-    left:12px;
-    right:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-}
-
-.glass{
-    background:rgba(10,8,30,.58);
-    border:1px solid rgba(255,255,255,.15);
-    box-shadow:0 10px 40px rgba(0,0,0,.25);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    border-radius:16px;
-}
-
-#titleBox{
-    padding:10px 14px;
-    max-width:70%;
-}
-
-#titleBox b{
-    display:block;
-    font-size:14px;
-}
-
-#titleBox span{
-    display:block;
-    margin-top:3px;
-    opacity:.65;
-    font-size:11px;
-}
-
-#objective{
-    position:absolute;
-    top:85px;
-    left:50%;
-    transform:translateX(-50%);
-    width:min(92vw,420px);
-    padding:12px 16px;
-    text-align:center;
-}
-
-#objective .small{
-    font-size:10px;
-    opacity:.55;
-    text-transform:uppercase;
-    letter-spacing:2px;
-}
-
-#objectiveText{
-    margin-top:5px;
-    font-weight:bold;
-}
-
-#inventory{
-    position:absolute;
-    right:12px;
-    top:80px;
-    width:180px;
-    padding:12px;
-    display:none;
-    pointer-events:auto;
-}
-
-#inventory h3{
-    margin:0 0 8px;
-}
-
-.item{
-    display:flex;
-    justify-content:space-between;
-    padding:5px 0;
-    font-size:12px;
-}
-
-#interaction{
-    position:absolute;
-    left:50%;
-    bottom:125px;
-    transform:translateX(-50%);
-    display:none;
-    pointer-events:none;
-}
-
-#interaction button{
-    border:0;
-    padding:12px 20px;
-    color:white;
-    background:linear-gradient(135deg,#ff4fa3,#8d5cff);
-    border-radius:30px;
-    font-weight:bold;
-}
-
-#dialogue{
-    position:absolute;
-    left:50%;
-    bottom:25px;
-    transform:translateX(-50%);
-    width:min(92vw,650px);
-    padding:18px;
-    display:none;
-    pointer-events:auto;
-}
-
-#dialogueName{
-    color:#ff83c8;
-    font-weight:bold;
-    margin-bottom:6px;
-}
-
-#dialogueText{
-    line-height:1.5;
-    font-size:14px;
-}
-
-#dialogueNext{
-    float:right;
-    margin-top:10px;
-    border:0;
-    padding:8px 14px;
-    border-radius:20px;
-    background:white;
-    color:#111;
-}
-
-#minimap{
-    position:absolute;
-    right:15px;
-    bottom:15px;
-    width:120px;
-    height:120px;
-    border-radius:50%;
-    overflow:hidden;
-    border:2px solid rgba(255,255,255,.25);
-    background:#081329;
-}
-
-#mapCanvas{
-    width:100%;
-    height:100%;
-}
-
-#controls{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-}
-
-#joystick{
-    position:absolute;
-    left:20px;
-    bottom:20px;
-    width:125px;
-    height:125px;
-    border-radius:50%;
-    background:#ffffff12;
-    border:1px solid #ffffff22;
-    pointer-events:auto;
-}
-
-#stick{
-    position:absolute;
-    left:37px;
-    top:37px;
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    background:#ffffff33;
-    border:1px solid #ffffff44;
-}
-
-.action{
-    position:absolute;
-    width:62px;
-    height:62px;
-    border-radius:50%;
-    border:1px solid #ffffff33;
-    color:white;
-    font-weight:bold;
-    background:#ffffff18;
-    pointer-events:auto;
-    backdrop-filter:blur(8px);
-}
-
-#jumpBtn{
-    right:25px;
-    bottom:105px;
-}
-
-#runBtn{
-    right:90px;
-    bottom:35px;
-}
-
-#interactBtn{
-    right:20px;
-    bottom:35px;
-    background:linear-gradient(135deg,#ff4fa3aa,#825fffaa);
-}
-
-#holdBtn{
-    right:155px;
-    bottom:35px;
-}
-
-#menuBtn{
-    right:15px;
-    top:80px;
-    width:42px;
-    height:42px;
-}
-
-#menu{
-    position:absolute;
-    right:15px;
-    top:130px;
-    width:180px;
-    padding:10px;
-    display:none;
-    pointer-events:auto;
-}
-
-.menuButton{
-    width:100%;
-    border:0;
-    color:white;
-    background:#ffffff12;
-    border-radius:10px;
-    padding:10px;
-    margin:4px 0;
-}
-
-#cinematic{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    background:#000;
-    opacity:0;
-    pointer-events:none;
-}
-
-#cinematic h1{
-    font-size:clamp(28px,8vw,80px);
-    text-align:center;
-    margin:10px;
-}
-
-#cinematic p{
-    font-size:16px;
-    opacity:.7;
-}
-
-#birthday{
-    position:fixed;
-    inset:0;
-    z-index:200;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
     background:
-        radial-gradient(circle,#4c1768 0%,#10051e 55%,#010106 100%);
+        rgba(7,8,25,.62);
+
+    box-shadow:
+        0 20px 80px
+        #0008;
+
+    backdrop-filter:blur(14px);
+
+    -webkit-backdrop-filter:blur(14px);
 }
 
-#birthdayBox{
-    width:min(90vw,700px);
-    padding:35px;
-}
+h1{
 
-#birthdayBox h1{
-    font-size:clamp(36px,10vw,90px);
-    margin:0;
-    background:linear-gradient(90deg,#ff73c6,#fff,#8fdcff);
+    font-size:
+        clamp(
+            32px,
+            9vw,
+            76px
+        );
+
+    line-height:1.02;
+
+    margin:
+        0 0 14px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff70bb,
+            #fff,
+            #8edcff
+        );
+
     color:transparent;
+
     background-clip:text;
     -webkit-background-clip:text;
 }
 
-#birthdayBox p{
-    line-height:1.7;
-    opacity:.8;
+.sub{
+
+    opacity:.72;
+
+    line-height:1.6;
 }
 
-#startButton{
-    border:0;
-    padding:14px 30px;
-    margin-top:20px;
-    border-radius:40px;
-    font-weight:bold;
-    color:white;
-    background:linear-gradient(90deg,#ff4fa3,#725cff);
+.bar{
+
+    height:5px;
+
+    background:#ffffff18;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    margin:
+        22px auto 0;
+
+    max-width:300px;
 }
+
+.bar > i{
+
+    display:block;
+
+    height:100%;
+
+    width:0;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--pink),
+            var(--purple)
+        );
+
+    transition:
+        width .25s;
+}
+
+.primary{
+
+    border:0;
+
+    border-radius:999px;
+
+    padding:
+        13px 24px;
+
+    margin-top:18px;
+
+    color:#fff;
+
+    font-weight:800;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--pink),
+            var(--purple)
+        );
+
+    box-shadow:
+        0 8px 30px
+        #ff63ad33;
+}
+
+.heart{
+
+    font-size:48px;
+
+    animation:
+        float 2s
+        ease-in-out
+        infinite;
+}
+
+@keyframes float{
+
+    50%{
+        transform:
+            translateY(-10px);
+    }
+}
+
+
+/* ============================================================
+   HUD
+============================================================ */
+
+#hud{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:20;
+
+    pointer-events:none;
+}
+
+.glass{
+
+    background:
+        var(--glass);
+
+    border:
+        1px solid
+        var(--line);
+
+    box-shadow:
+        0 10px 35px
+        #0005;
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    border-radius:15px;
+}
+
+
+/* ============================================================
+   TOP BAR
+============================================================ */
+
+#top{
+
+    position:absolute;
+
+    top:
+        max(
+            10px,
+            env(safe-area-inset-top)
+        );
+
+    left:10px;
+    right:10px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:8px;
+}
+
+#location{
+
+    padding:
+        9px 12px;
+
+    font-size:12px;
+
+    font-weight:800;
+
+    max-width:70%;
+
+    letter-spacing:.4px;
+}
+
+#location small{
+
+    display:block;
+
+    opacity:.55;
+
+    font-weight:500;
+
+    margin-top:2px;
+}
+
+
+/* ============================================================
+   OBJECTIVE
+============================================================ */
+
+#objective{
+
+    position:absolute;
+
+    top:
+        max(
+            68px,
+            calc(
+                env(safe-area-inset-top)
+                + 58px
+            )
+        );
+
+    left:50%;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(
+            90vw,
+            440px
+        );
+
+    padding:
+        9px 13px;
+
+    text-align:center;
+
+    font-size:12px;
+}
+
+#objective small{
+
+    display:block;
+
+    text-transform:uppercase;
+
+    letter-spacing:2px;
+
+    font-size:9px;
+
+    opacity:.55;
+
+    margin-bottom:3px;
+}
+
+
+/* ============================================================
+   INVENTORY
+============================================================ */
+
+#inventory{
+
+    position:absolute;
+
+    right:10px;
+
+    top:120px;
+
+    width:185px;
+
+    padding:12px;
+
+    pointer-events:auto;
+}
+
+#inventory h3{
+
+    margin:
+        0 0 7px;
+
+    font-size:14px;
+}
+
+.item{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    font-size:12px;
+
+    padding:4px 0;
+}
+
+
+/* ============================================================
+   DIALOGUE
+============================================================ */
+
+#dialogue{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:
+        max(
+            14px,
+            env(safe-area-inset-bottom)
+        );
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(
+            92vw,
+            660px
+        );
+
+    padding:15px;
+
+    pointer-events:auto;
+}
+
+#dialogueName{
+
+    font-weight:800;
+
+    color:#ff82c0;
+
+    margin-bottom:5px;
+}
+
+#dialogueText{
+
+    font-size:13px;
+
+    line-height:1.5;
+
+    opacity:.92;
+}
+
+#dialogueNext{
+
+    float:right;
+
+    margin-top:8px;
+
+    border:0;
+
+    border-radius:999px;
+
+    padding:
+        7px 13px;
+}
+
+
+/* ============================================================
+   INTERACTION PROMPT
+============================================================ */
+
+#prompt{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:150px;
+
+    transform:
+        translateX(-50%);
+
+    padding:
+        9px 15px;
+
+    display:none;
+
+    font-size:12px;
+
+    font-weight:800;
+}
+
+
+/* ============================================================
+   MINIMAP
+============================================================ */
+
+#map{
+
+    position:absolute;
+
+    right:10px;
+
+    bottom:
+        max(
+            10px,
+            env(safe-area-inset-bottom)
+        );
+
+    width:100px;
+
+    height:100px;
+
+    border-radius:50%;
+
+    overflow:hidden;
+
+    border:
+        1px solid
+        #fff4;
+
+    background:#06101dcc;
+}
+
+#map canvas{
+
+    position:static;
+
+    width:100%;
+
+    height:100%;
+}
+
+
+/* ============================================================
+   MOBILE CONTROLS
+============================================================ */
+
+#controls{
+
+    position:absolute;
+
+    inset:0;
+}
+
+
+/* Joystick */
+
+#stickBase{
+
+    position:absolute;
+
+    left:
+        max(
+            14px,
+            env(safe-area-inset-left)
+        );
+
+    bottom:
+        max(
+            14px,
+            env(safe-area-inset-bottom)
+        );
+
+    width:122px;
+
+    height:122px;
+
+    border-radius:50%;
+
+    background:#ffffff10;
+
+    border:
+        1px solid
+        #ffffff20;
+
+    pointer-events:auto;
+}
+
+#stick{
+
+    position:absolute;
+
+    left:36px;
+
+    top:36px;
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    background:#ffffff2b;
+
+    border:
+        1px solid
+        #fff4;
+}
+
+
+/* Action buttons */
+
+.action{
+
+    position:absolute;
+
+    width:58px;
+
+    height:58px;
+
+    border:
+        1px solid
+        #fff3;
+
+    border-radius:50%;
+
+    background:
+        #11152bcc;
+
+    color:#fff;
+
+    font-weight:800;
+
+    pointer-events:auto;
+
+    box-shadow:
+        0 6px 25px
+        #0005;
+}
+
+#jump{
+
+    right:18px;
+
+    bottom:108px;
+}
+
+#run{
+
+    right:83px;
+
+    bottom:38px;
+}
+
+#interact{
+
+    right:18px;
+
+    bottom:38px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff4fa3cc,
+            #785cffcc
+        );
+}
+
+#hold{
+
+    right:148px;
+
+    bottom:38px;
+}
+
+#menuBtn{
+
+    right:10px;
+
+    top:
+        max(
+            10px,
+            env(safe-area-inset-top)
+        );
+
+    width:42px;
+
+    height:42px;
+}
+
+
+/* Menu */
+
+#menu{
+
+    position:absolute;
+
+    right:10px;
+
+    top:60px;
+
+    width:180px;
+
+    padding:8px;
+
+    pointer-events:auto;
+}
+
+.menuItem{
+
+    display:block;
+
+    width:100%;
+
+    border:0;
+
+    background:#fff1;
+
+    color:#fff;
+
+    border-radius:9px;
+
+    padding:9px;
+
+    margin:3px 0;
+
+    text-align:left;
+}
+
+
+/* ============================================================
+   CINEMATIC
+============================================================ */
+
+#cinematic{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:100;
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+    background:#000;
+
+    opacity:0;
+
+    transition:
+        opacity .6s;
+
+    pointer-events:none;
+
+    padding:24px;
+}
+
+.cineBox{
+
+    max-width:700px;
+}
+
+.cineBox h2{
+
+    font-size:
+        clamp(
+            30px,
+            9vw,
+            70px
+        );
+
+    margin:
+        0 0 8px;
+}
+
+.cineBox p{
+
+    opacity:.7;
+}
+
+
+/* ============================================================
+   LANDSCAPE TABLET / PHONE
+============================================================ */
 
 @media(max-width:700px){
-    #objective{
-        top:75px;
+
+    #map{
+
+        width:82px;
+        height:82px;
     }
 
-    #minimap{
-        width:90px;
-        height:90px;
-    }
+    #prompt{
 
-    #interaction{
-        bottom:155px;
+        bottom:170px;
     }
 
     #inventory{
+
         width:155px;
     }
 }
+
+
+/* ============================================================
+   LANDSCAPE MOBILE
+============================================================ */
+
+@media(
+    orientation:landscape
+)
+and
+(max-height:520px){
+
+    #objective{
+
+        top:54px;
+
+        width:
+            min(
+                60vw,
+                420px
+            );
+    }
+
+    #prompt{
+
+        bottom:105px;
+    }
+
+    #map{
+
+        width:74px;
+        height:74px;
+    }
+
+    #stickBase{
+
+        width:100px;
+        height:100px;
+    }
+
+    #stick{
+
+        left:29px;
+        top:29px;
+    }
+
+    #jump{
+
+        bottom:78px;
+    }
+
+    #run,
+    #interact,
+    #hold{
+
+        bottom:16px;
+    }
+}
+
 </style>
+
 </head>
+
 
 <body>
 
+
+<!-- ============================================================
+     LOADING
+============================================================ -->
+
 <div id="loading">
-    <h1>Our Little Universe</h1>
-    <p>Building the galaxy for your virtual date...</p>
-    <div class="loader"><div id="loadbar"></div></div>
+
+    <div class="panel">
+
+        <h1>
+            Our Little Universe
+        </h1>
+
+        <div class="sub">
+            Building the galaxy, cities and your birthday date…
+        </div>
+
+        <div class="bar">
+            <i id="loadbar"></i>
+        </div>
+
+    </div>
+
 </div>
 
-<div id="hud">
 
-    <div id="topbar">
-        <div id="titleBox" class="glass">
-            <b>Our Little Universe</b>
-            <span id="locationText">THE MILKY WAY</span>
+<!-- ============================================================
+     WELCOME
+============================================================ -->
+
+<div id="welcome" class="hidden">
+
+    <div class="panel">
+
+        <div class="heart">
+            ♥
         </div>
+
+        <h1>
+            Happy Birthday
+        </h1>
+
+        <div class="sub">
+
+            A tiny universe made for one very special person.
+
+            <br><br>
+
+            Hold her hand.
+            Explore.
+            Find the gifts.
+            Watch the stars together.
+
+        </div>
+
+        <button
+            id="start"
+            class="primary">
+
+            ENTER OUR UNIVERSE
+
+        </button>
+
     </div>
 
-    <div id="objective" class="glass">
-        <div class="small">Current Mission</div>
-        <div id="objectiveText">Explore the universe together.</div>
+</div>
+
+
+<!-- ============================================================
+     ENDING
+============================================================ -->
+
+<div id="ending" class="hidden">
+
+    <div class="panel">
+
+        <div class="heart">
+            ♥
+        </div>
+
+        <h1>
+            Happy Birthday
+        </h1>
+
+        <div class="sub">
+
+            The universe is unimaginably huge.
+
+            <br>
+
+            Billions of galaxies.
+            Trillions of stars.
+
+            <br><br>
+
+            And somehow, in all that space…
+
+            <br>
+
+            <b>
+                we found each other.
+            </b>
+
+        </div>
+
+        <button
+            id="closeEnding"
+            class="primary">
+
+            Stay in our universe
+
+        </button>
+
     </div>
 
-    <div id="inventory" class="glass">
-        <h3>Inventory</h3>
-        <div class="item"><span>Rose</span><b id="roseCount">0</b></div>
-        <div class="item"><span>Chocolate</span><b id="chocoCount">0</b></div>
-        <div class="item"><span>Gift</span><b id="giftCount">0</b></div>
-        <div class="item"><span>Letter</span><b id="letterCount">0</b></div>
-        <div class="item"><span>Star Fragment</span><b id="starCount">0</b></div>
+</div>
+
+
+<!-- ============================================================
+     HUD
+============================================================ -->
+
+<div id="hud" class="hidden">
+
+
+    <!-- TOP -->
+
+    <div id="top">
+
+        <div
+            id="location"
+            class="glass">
+
+            MILKY WAY
+
+            <small id="locationSub">
+                Cosmic view
+            </small>
+
+        </div>
+
+
+        <button
+            id="menuBtn"
+            class="action">
+
+            ☰
+
+        </button>
+
     </div>
 
-    <div id="interaction">
-        <button>INTERACT</button>
+
+    <!-- OBJECTIVE -->
+
+    <div
+        id="objective"
+        class="glass">
+
+        <small>
+            Current objective
+        </small>
+
+        <span id="objectiveText">
+            Explore the universe together.
+        </span>
+
     </div>
 
-    <div id="dialogue" class="glass">
+
+    <!-- INVENTORY -->
+
+    <div
+        id="inventory"
+        class="glass hidden">
+
+        <h3>
+            Inventory
+        </h3>
+
+        <div class="item">
+            <span>Rose</span>
+            <b id="rose">0</b>
+        </div>
+
+        <div class="item">
+            <span>Chocolate</span>
+            <b id="chocolate">0</b>
+        </div>
+
+        <div class="item">
+            <span>Gift</span>
+            <b id="gift">0</b>
+        </div>
+
+        <div class="item">
+            <span>Letter</span>
+            <b id="letter">0</b>
+        </div>
+
+        <div class="item">
+            <span>Star fragments</span>
+            <b id="star">0</b>
+        </div>
+
+    </div>
+
+
+    <!-- INTERACTION -->
+
+    <div
+        id="prompt"
+        class="glass">
+
+        TAP E TO INTERACT
+
+    </div>
+
+
+    <!-- DIALOGUE -->
+
+    <div
+        id="dialogue"
+        class="glass hidden">
+
         <div id="dialogueName"></div>
+
         <div id="dialogueText"></div>
-        <button id="dialogueNext">Continue</button>
+
+        <button id="dialogueNext">
+            Continue
+        </button>
+
     </div>
 
-    <div id="minimap">
-        <canvas id="mapCanvas" width="180" height="180"></canvas>
+
+    <!-- MINIMAP -->
+
+    <div id="map">
+
+        <canvas
+            id="mapCanvas"
+            width="180"
+            height="180">
+        </canvas>
+
     </div>
+
+
+    <!-- MOBILE CONTROLS -->
 
     <div id="controls">
 
-        <div id="joystick">
+
+        <!-- JOYSTICK -->
+
+        <div id="stickBase">
+
             <div id="stick"></div>
+
         </div>
 
-        <button id="jumpBtn" class="action">JUMP</button>
-        <button id="runBtn" class="action">RUN</button>
-        <button id="holdBtn" class="action">♥</button>
-        <button id="interactBtn" class="action">E</button>
-        <button id="menuBtn" class="action">☰</button>
 
-        <div id="menu" class="glass">
-            <button class="menuButton" id="inventoryBtn">Inventory</button>
-            <button class="menuButton" id="musicBtn">Music</button>
-            <button class="menuButton" id="dayBtn">Day / Night</button>
-            <button class="menuButton" id="galaxyBtn">Galaxy View</button>
-            <button class="menuButton" id="cityBtn">City View</button>
-            <button class="menuButton" id="fullBtn">Fullscreen</button>
+        <!-- BUTTONS -->
+
+        <button
+            id="jump"
+            class="action">
+
+            JUMP
+
+        </button>
+
+
+        <button
+            id="run"
+            class="action">
+
+            RUN
+
+        </button>
+
+
+        <button
+            id="hold"
+            class="action">
+
+            ♥
+
+        </button>
+
+
+        <button
+            id="interact"
+            class="action">
+
+            E
+
+        </button>
+
+
+        <!-- MENU -->
+
+        <div
+            id="menu"
+            class="glass hidden">
+
+
+            <button
+                class="menuItem"
+                id="invBtn">
+
+                Inventory
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="musicBtn">
+
+                Music: ON
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="dayBtn">
+
+                Night / Day
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="galaxyBtn">
+
+                Galaxy
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="indoreBtn">
+
+                Indore
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="patnaBtn">
+
+                Patna
+
+            </button>
+
+
+            <button
+                class="menuItem"
+                id="fullBtn">
+
+                Fullscreen
+
+            </button>
+
+
         </div>
 
     </div>
+
 </div>
+
+
+<!-- ============================================================
+     CINEMATIC
+============================================================ -->
 
 <div id="cinematic">
-    <h1 id="cinematicTitle"></h1>
-    <p id="cinematicText"></p>
+
+    <div class="cineBox">
+
+        <h2 id="cineTitle"></h2>
+
+        <p id="cineText"></p>
+
+    </div>
+
 </div>
 
-<div id="birthday">
-    <div id="birthdayBox" class="glass">
-        <h1>Happy Birthday</h1>
-        <p>
-            The universe is enormous.<br>
-            Billions of galaxies. Trillions of stars.<br><br>
-            And somehow, in all of that space,<br>
-            I found you.
-        </p>
-        <button id="startButton">ENTER OUR UNIVERSE</button>
-    </div>
-</div>
+
+<!-- ============================================================
+     THREE.JS IMPORT MAP
+============================================================ -->
 
 <script type="importmap">
+
 {
     "imports":{
-        "three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        "three":
+        "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
     }
 }
+
 </script>
+
+
+<!-- ============================================================
+     GAME
+============================================================ -->
 
 <script type="module">
 
 import * as THREE from "three";
 
+
 /* ============================================================
-   BASIC GAME CONFIGURATION
+   CONFIGURATION
 ============================================================ */
 
-const CONFIG = {
+const CFG = {
 
-    gravity: -28,
+    world:160,
 
-    walkSpeed: 5,
+    gravity:-30,
 
-    runSpeed: 10,
+    walk:5,
 
-    jumpPower: 10,
+    run:9,
 
-    playerRadius: .45,
+    jump:10,
 
-    worldSize: 240,
+    stars:5500,
 
-    citySize: 160,
+    galaxyStars:6500,
 
-    stars: 8000,
+    npcs:24,
 
-    galaxyStars: 10000,
-
-    npcCount: 35,
-
-    vehicleCount: 18
+    vehicles:12
 
 };
 
+
 /* ============================================================
-   GLOBAL GAME STATE
+   GAME STATE
 ============================================================ */
 
-const GAME = {
+const S = {
 
-    mode:"galaxy",
+    mode:"city",
 
     city:"indore",
 
-    running:false,
-
     day:true,
-
-    handHolding:false,
 
     music:true,
 
-    objectiveIndex:0,
+    holding:false,
 
-    inventory:{
+    dialogue:false,
+
+    objective:0,
+
+    time:0,
+
+    inv:{
         rose:0,
         chocolate:0,
         gift:0,
@@ -558,29 +1362,70 @@ const GAME = {
         star:0
     },
 
-    completed:{},
-
-    nearby:null,
-
-    dialogue:false,
-
-    cameraMode:"third",
-
-    time:0
+    done:{}
 
 };
 
+
 /* ============================================================
-   THREE.JS CORE
+   HELPERS
 ============================================================ */
 
-const renderer = new THREE.WebGLRenderer({
-    antialias:true,
-    powerPreference:"high-performance"
-});
+const $ =
+    id =>
+        document.getElementById(id);
+
+const rand =
+    (a,b) =>
+        a + Math.random()*(b-a);
+
+const clamp =
+    (v,a,b) =>
+        Math.max(
+            a,
+            Math.min(b,v)
+        );
+
+const dist =
+    (a,b) =>
+        a.distanceTo(b);
+
+function progress(n=5){
+
+    const current =
+        parseFloat(
+            $("loadbar").style.width ||
+            0
+        );
+
+    $("loadbar").style.width =
+        Math.min(
+            100,
+            current+n
+        ) + "%";
+}
+
+
+/* ============================================================
+   RENDERER
+============================================================ */
+
+const renderer =
+    new THREE.WebGLRenderer({
+
+        antialias:true,
+
+        powerPreference:
+            "high-performance"
+
+    });
+
 
 renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio,1.7)
+    Math.min(
+        window.devicePixelRatio,
+        1.5
+    )
 );
 
 renderer.setSize(
@@ -588,724 +1433,1062 @@ renderer.setSize(
     innerHeight
 );
 
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
 
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.15;
+renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
 
-document.body.appendChild(renderer.domElement);
+renderer.toneMappingExposure =
+    1.1;
 
-const scene = new THREE.Scene();
+renderer.shadowMap.enabled =
+    true;
 
-scene.background = new THREE.Color(0x02030b);
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
 
-const camera = new THREE.PerspectiveCamera(
-    60,
-    innerWidth/innerHeight,
-    .05,
-    10000
+document.body.appendChild(
+    renderer.domElement
 );
 
-camera.position.set(0,5,10);
+
+/* ============================================================
+   SCENE
+============================================================ */
+
+const scene =
+    new THREE.Scene();
+
+scene.background =
+    new THREE.Color(
+        0x02030b
+    );
+
+
+const camera =
+    new THREE.PerspectiveCamera(
+
+        58,
+
+        innerWidth /
+        innerHeight,
+
+        .05,
+
+        5000
+
+    );
+
 
 /* ============================================================
    LIGHTING
 ============================================================ */
 
-const ambient = new THREE.HemisphereLight(
-    0x9aa8ff,
-    0x151020,
-    1.7
+const hemi =
+    new THREE.HemisphereLight(
+
+        0x9aa8ff,
+
+        0x17101e,
+
+        1.8
+
+    );
+
+scene.add(hemi);
+
+
+const sun =
+    new THREE.DirectionalLight(
+
+        0xffffff,
+
+        2.8
+
+    );
+
+sun.position.set(
+    40,
+    90,
+    30
 );
 
-scene.add(ambient);
+sun.castShadow =
+    true;
 
-const sun = new THREE.DirectionalLight(
-    0xffffff,
-    3
+sun.shadow.mapSize.set(
+    1024,
+    1024
 );
 
-sun.position.set(50,100,40);
-
-sun.castShadow=true;
-
-sun.shadow.mapSize.width=2048;
-sun.shadow.mapSize.height=2048;
-
-sun.shadow.camera.left=-100;
-sun.shadow.camera.right=100;
-sun.shadow.camera.top=100;
-sun.shadow.camera.bottom=-100;
+sun.shadow.camera.left=-90;
+sun.shadow.camera.right=90;
+sun.shadow.camera.top=90;
+sun.shadow.camera.bottom=-90;
 
 scene.add(sun);
 
-const moon = new THREE.DirectionalLight(
-    0x596eff,
-    .5
-);
 
-moon.position.set(-60,40,-80);
+const moon =
+    new THREE.DirectionalLight(
+
+        0x7180ff,
+
+        .35
+
+    );
+
+moon.position.set(
+    -50,
+    50,
+    -70
+);
 
 scene.add(moon);
 
+
 /* ============================================================
-   HELPERS
+   MATERIAL
 ============================================================ */
 
-function rand(a,b){
-    return a + Math.random()*(b-a);
+function mat(
+    color,
+    roughness=.8,
+    metalness=0
+){
+
+    return new THREE.MeshStandardMaterial({
+
+        color,
+
+        roughness,
+
+        metalness
+
+    });
+
 }
 
-function clamp(v,a,b){
-    return Math.max(a,Math.min(b,v));
-}
 
-function distance(a,b){
-    return a.distanceTo(b);
-}
+/* ============================================================
+   TEXT LABEL
+============================================================ */
 
-function createTextSprite(text,color="#ffffff"){
+function label(
+    text,
+    color="#fff"
+){
 
-    const canvas=document.createElement("canvas");
+    const canvas =
+        document.createElement(
+            "canvas"
+        );
 
     canvas.width=512;
     canvas.height=128;
 
-    const ctx=canvas.getContext("2d");
+    const ctx =
+        canvas.getContext(
+            "2d"
+        );
 
-    ctx.clearRect(0,0,512,128);
-
-    ctx.font="bold 42px Arial";
     ctx.textAlign="center";
     ctx.textBaseline="middle";
 
-    ctx.fillStyle="rgba(0,0,0,.45)";
-    ctx.fillRect(20,20,472,88);
+    ctx.font=
+        "bold 38px Arial";
+
+    ctx.fillStyle=
+        "rgba(0,0,0,.45)";
+
+    ctx.fillRect(
+        12,
+        20,
+        488,
+        88
+    );
 
     ctx.fillStyle=color;
-    ctx.fillText(text,256,64);
 
-    const texture=new THREE.CanvasTexture(canvas);
-
-    const material=new THREE.SpriteMaterial({
-        map:texture,
-        transparent:true
-    });
-
-    const sprite=new THREE.Sprite(material);
-
-    sprite.scale.set(4,1,1);
-
-    return sprite;
-}
-
-function makeMaterial(color,roughness=.8){
-
-    return new THREE.MeshStandardMaterial({
-        color,
-        roughness,
-        metalness:.05
-    });
-}
-
-/* ============================================================
-   LOADING
-============================================================ */
-
-let loadingProgress=0;
-
-function progress(){
-
-    loadingProgress++;
-
-    document.getElementById("loadbar").style.width =
-        `${Math.min(100,loadingProgress)}%`;
-}
-
-/* ============================================================
-   STAR SYSTEM
-============================================================ */
-
-const starGroup=new THREE.Group();
-
-scene.add(starGroup);
-
-function buildStarField(){
-
-    const geometry=new THREE.BufferGeometry();
-
-    const positions=new Float32Array(CONFIG.stars*3);
-
-    const colors=new Float32Array(CONFIG.stars*3);
-
-    const color=new THREE.Color();
-
-    for(let i=0;i<CONFIG.stars;i++){
-
-        const r=rand(100,1500);
-
-        const theta=Math.random()*Math.PI*2;
-
-        const y=rand(-300,300);
-
-        positions[i*3]=Math.cos(theta)*r;
-        positions[i*3+1]=y;
-        positions[i*3+2]=Math.sin(theta)*r;
-
-        const temperature=Math.random();
-
-        if(temperature<.15)
-            color.set(0x8bb8ff);
-
-        else if(temperature<.4)
-            color.set(0xffffff);
-
-        else if(temperature<.75)
-            color.set(0xfff2c0);
-
-        else
-            color.set(0xff9d66);
-
-        colors[i*3]=color.r;
-        colors[i*3+1]=color.g;
-        colors[i*3+2]=color.b;
-    }
-
-    geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(positions,3)
+    ctx.fillText(
+        text,
+        256,
+        64
     );
 
-    geometry.setAttribute(
-        "color",
-        new THREE.BufferAttribute(colors,3)
-    );
-
-    const material=new THREE.PointsMaterial({
-        size:1.6,
-        sizeAttenuation:true,
-        vertexColors:true,
-        transparent:true,
-        opacity:.9
-    });
-
-    const stars=new THREE.Points(
-        geometry,
-        material
-    );
-
-    starGroup.add(stars);
-
-    progress();
-}
-
-buildStarField();
-
-/* ============================================================
-   MILKY WAY GALAXY
-============================================================ */
-
-const galaxyGroup=new THREE.Group();
-
-scene.add(galaxyGroup);
-
-function buildGalaxy(){
-
-    const geometry=new THREE.BufferGeometry();
-
-    const count=CONFIG.galaxyStars;
-
-    const positions=new Float32Array(count*3);
-
-    const colors=new Float32Array(count*3);
-
-    const color=new THREE.Color();
-
-    for(let i=0;i<count;i++){
-
-        const radius=Math.pow(Math.random(),.6)*420;
-
-        const arm=Math.floor(Math.random()*5);
-
-        const baseAngle =
-            radius*.018 +
-            arm*(Math.PI*2/5);
-
-        const angle=
-            baseAngle+
-            rand(-.18,.18);
-
-        const thickness=rand(-10,10);
-
-        positions[i*3]=
-            Math.cos(angle)*radius;
-
-        positions[i*3+1]=
-            thickness;
-
-        positions[i*3+2]=
-            Math.sin(angle)*radius;
-
-        color.setHSL(
-            rand(.55,.68),
-            rand(.1,.5),
-            rand(.5,1)
+    const texture =
+        new THREE.CanvasTexture(
+            canvas
         );
 
-        colors[i*3]=color.r;
-        colors[i*3+1]=color.g;
-        colors[i*3+2]=color.b;
+    const sprite =
+        new THREE.Sprite(
+
+            new THREE.SpriteMaterial({
+
+                map:texture,
+
+                transparent:true,
+
+                depthWrite:false
+
+            })
+
+        );
+
+    sprite.scale.set(
+        5,
+        1.25,
+        1
+    );
+
+    return sprite;
+
+}
+
+
+/* ============================================================
+   COSMIC GROUPS
+============================================================ */
+
+const stars =
+    new THREE.Group();
+
+const galaxy =
+    new THREE.Group();
+
+const solar =
+    new THREE.Group();
+
+const spaceFX =
+    new THREE.Group();
+
+scene.add(
+    stars,
+    galaxy,
+    solar,
+    spaceFX
+);
+
+
+/* ============================================================
+   STAR FIELD
+============================================================ */
+
+function pointField(
+    count,
+    galactic=false
+){
+
+    const geometry =
+        new THREE.BufferGeometry();
+
+    const positions =
+        new Float32Array(
+            count*3
+        );
+
+    const colors =
+        new Float32Array(
+            count*3
+        );
+
+    const color =
+        new THREE.Color();
+
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        if(galactic){
+
+            const radius =
+                Math.pow(
+                    Math.random(),
+                    .55
+                )*380;
+
+            const angle =
+                radius*.019 +
+
+                Math.floor(
+                    Math.random()*5
+                )*
+                Math.PI*2/5 +
+
+                rand(
+                    -.16,
+                    .16
+                );
+
+            positions[i*3] =
+                Math.cos(angle)*
+                radius;
+
+            positions[i*3+1] =
+                rand(-10,10);
+
+            positions[i*3+2] =
+                Math.sin(angle)*
+                radius;
+
+            color.setHSL(
+                rand(.55,.7),
+                rand(.05,.4),
+                rand(.55,1)
+            );
+
+        }
+
+        else{
+
+            const radius =
+                rand(150,1500);
+
+            const angle =
+                Math.random()*
+                Math.PI*2;
+
+            positions[i*3] =
+                Math.cos(angle)*
+                radius;
+
+            positions[i*3+1] =
+                rand(-350,350);
+
+            positions[i*3+2] =
+                Math.sin(angle)*
+                radius;
+
+            const colorsList=[
+                0x9bbcff,
+                0xffffff,
+                0xffe4aa,
+                0xff9b66
+            ];
+
+            color.set(
+                colorsList[
+                    Math.floor(
+                        Math.random()*
+                        colorsList.length
+                    )
+                ]
+            );
+
+        }
+
+
+        colors[i*3] =
+            color.r;
+
+        colors[i*3+1] =
+            color.g;
+
+        colors[i*3+2] =
+            color.b;
+
     }
+
 
     geometry.setAttribute(
         "position",
-        new THREE.BufferAttribute(positions,3)
-    );
-
-    geometry.setAttribute(
-        "color",
-        new THREE.BufferAttribute(colors,3)
-    );
-
-    const material=new THREE.PointsMaterial({
-        size:1.5,
-        vertexColors:true,
-        transparent:true,
-        opacity:.8
-    });
-
-    galaxyGroup.add(
-        new THREE.Points(
-            geometry,
-            material
+        new THREE.BufferAttribute(
+            positions,
+            3
         )
     );
 
-    const core=new THREE.Mesh(
-        new THREE.SphereGeometry(20,32,32),
-        new THREE.MeshBasicMaterial({
-            color:0xffc27a,
-            transparent:true,
-            opacity:.3
-        })
+    geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(
+            colors,
+            3
+        )
     );
 
-    galaxyGroup.add(core);
 
-    progress();
-}
+    return new THREE.Points(
 
-buildGalaxy();
+        geometry,
 
-/* ============================================================
-   NEBULA
-============================================================ */
+        new THREE.PointsMaterial({
 
-function createNebula(position,color){
+            size:
+                galactic
+                ?1.4
+                :1.7,
 
-    const group=new THREE.Group();
+            sizeAttenuation:true,
 
-    for(let i=0;i<70;i++){
+            vertexColors:true,
 
-        const material=new THREE.SpriteMaterial({
-            color,
             transparent:true,
-            opacity:rand(.015,.08),
-            blending:THREE.AdditiveBlending
-        });
 
-        const sprite=new THREE.Sprite(material);
+            opacity:.9
 
-        const s=rand(15,80);
+        })
 
-        sprite.scale.set(s,s*.55,1);
+    );
 
-        sprite.position.set(
-            rand(-40,40),
-            rand(-20,20),
-            rand(-40,40)
-        );
-
-        group.add(sprite);
-    }
-
-    group.position.copy(position);
-
-    scene.add(group);
-
-    return group;
 }
 
-createNebula(
-    new THREE.Vector3(350,100,-400),
-    0x9c63ff
+
+stars.add(
+    pointField(
+        CFG.stars
+    )
 );
 
-createNebula(
-    new THREE.Vector3(-400,-100,-300),
-    0xff4eaa
+galaxy.add(
+    pointField(
+        CFG.galaxyStars,
+        true
+    )
 );
+
 
 /* ============================================================
    BLACK HOLE
 ============================================================ */
 
-function createBlackHole(){
+const black =
+    new THREE.Group();
 
-    const group=new THREE.Group();
+black.position.set(
+    -330,
+    100,
+    -430
+);
 
-    const hole=new THREE.Mesh(
-        new THREE.SphereGeometry(12,32,32),
+
+black.add(
+
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            15,
+            32,
+            32
+        ),
+
         new THREE.MeshBasicMaterial({
             color:0x000000
         })
-    );
 
-    group.add(hole);
+    )
 
-    const ringGeometry=
-        new THREE.RingGeometry(15,32,96);
+);
 
-    const ringMaterial=
+
+const ring =
+    new THREE.Mesh(
+
+        new THREE.RingGeometry(
+            17,
+            38,
+            96
+        ),
+
         new THREE.MeshBasicMaterial({
-            color:0xff7b25,
+
+            color:0xff7426,
+
             transparent:true,
+
             opacity:.55,
-            side:THREE.DoubleSide,
-            blending:THREE.AdditiveBlending
-        });
 
-    const ring=new THREE.Mesh(
-        ringGeometry,
-        ringMaterial
+            side:
+                THREE.DoubleSide,
+
+            blending:
+                THREE.AdditiveBlending
+
+        })
+
     );
 
-    ring.rotation.x=Math.PI/2;
+ring.rotation.x =
+    Math.PI/2;
 
-    group.add(ring);
+black.add(ring);
 
-    group.position.set(
-        -400,
-        150,
-        -500
+galaxy.add(black);
+
+
+/* ============================================================
+   NEBULAE
+============================================================ */
+
+function nebula(
+    position,
+    color
+){
+
+    const group =
+        new THREE.Group();
+
+    for(
+        let i=0;
+        i<45;
+        i++
+    ){
+
+        const sprite =
+            new THREE.Sprite(
+
+                new THREE.SpriteMaterial({
+
+                    color,
+
+                    transparent:true,
+
+                    opacity:
+                        rand(
+                            .015,
+                            .07
+                        ),
+
+                    blending:
+                        THREE.AdditiveBlending
+
+                })
+
+            );
+
+        const size =
+            rand(20,80);
+
+        sprite.scale.set(
+            size,
+            size*.5,
+            1
+        );
+
+        sprite.position.set(
+
+            rand(-40,40),
+
+            rand(-20,20),
+
+            rand(-40,40)
+
+        );
+
+        group.add(sprite);
+
+    }
+
+    group.position.copy(
+        position
     );
 
-    scene.add(group);
+    galaxy.add(group);
 
-    return group;
 }
 
-const blackHole=createBlackHole();
+
+nebula(
+    new THREE.Vector3(
+        300,
+        100,
+        -320
+    ),
+    0x8d5cff
+);
+
+nebula(
+    new THREE.Vector3(
+        -300,
+        -80,
+        -280
+    ),
+    0xff4d9f
+);
+
 
 /* ============================================================
    SOLAR SYSTEM
 ============================================================ */
 
-const solarGroup=new THREE.Group();
+const sunMesh =
+    new THREE.Mesh(
 
-scene.add(solarGroup);
+        new THREE.SphereGeometry(
+            8,
+            24,
+            24
+        ),
 
-function createPlanet(radius,color,distanceFromSun,speed){
+        new THREE.MeshBasicMaterial({
+            color:0xffbd42
+        })
 
-    const planet=new THREE.Mesh(
-        new THREE.SphereGeometry(radius,24,24),
-        makeMaterial(color)
     );
 
-    planet.userData.orbit={
-        radius:distanceFromSun,
-        speed,
-        angle:Math.random()*Math.PI*2
-    };
+solar.add(sunMesh);
 
-    solarGroup.add(planet);
 
-    return planet;
-}
+solar.add(
 
-const sunMesh=new THREE.Mesh(
-    new THREE.SphereGeometry(8,32,32),
-    new THREE.MeshBasicMaterial({
-        color:0xffc14d
-    })
+    new THREE.PointLight(
+        0xffc66b,
+        8,
+        600
+    )
+
 );
 
-solarGroup.add(sunMesh);
 
-const sunLight=new THREE.PointLight(
-    0xffc875,
-    8,
-    700
+const planets=[];
+
+
+const planetData=[
+
+    [1.2,0x888888,16,.9],
+
+    [1.8,0xd59a5d,25,.7],
+
+    [2,0x3377ff,35,.5],
+
+    [1.5,0xd65d45,47,.4],
+
+    [5,0xc79a6b,65,.2],
+
+    [4,0xd0a76a,85,.16],
+
+    [3,0x74b8ff,105,.11],
+
+    [3,0x3c67cc,125,.08]
+
+];
+
+
+planetData.forEach(
+    data=>{
+
+        const [
+            radius,
+            color,
+            orbit,
+            velocity
+        ]=data;
+
+        const planet =
+            new THREE.Mesh(
+
+                new THREE.SphereGeometry(
+                    radius,
+                    20,
+                    20
+                ),
+
+                mat(color)
+
+            );
+
+        planet.userData={
+            d:orbit,
+            v:velocity,
+            a:Math.random()*
+              Math.PI*2
+        };
+
+        solar.add(
+            planet
+        );
+
+        planets.push(
+            planet
+        );
+
+    }
 );
 
-solarGroup.add(sunLight);
-
-createPlanet(1.2,0x888888,16,.9);
-createPlanet(1.8,0xffc078,24,.7);
-createPlanet(2,0x3377ff,35,.5);
-createPlanet(1.5,0xd65d45,47,.4);
-createPlanet(5,0xc79a6b,65,.2);
-createPlanet(4,0xd0a76a,85,.16);
-createPlanet(3,0x74b8ff,105,.11);
-createPlanet(3,0x3c67cc,125,.08);
-
-solarGroup.visible=false;
 
 /* ============================================================
-   CITY WORLD
+   METEORS
 ============================================================ */
 
-const cityGroup=new THREE.Group();
+const meteors=[];
 
-scene.add(cityGroup);
 
-const cityObjects=[];
+for(
+    let i=0;
+    i<24;
+    i++
+){
 
-function createGround(){
+    const meteor =
+        new THREE.Mesh(
 
-    const ground=new THREE.Mesh(
-        new THREE.PlaneGeometry(
-            CONFIG.citySize,
-            CONFIG.citySize,
-            30,
-            30
-        ),
-        makeMaterial(0x526b42)
+            new THREE.SphereGeometry(
+                rand(.08,.22),
+                6,
+                6
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0xffffff
+            })
+
+        );
+
+    meteor.position.set(
+
+        rand(-500,500),
+
+        rand(60,300),
+
+        rand(-500,500)
+
     );
 
-    ground.rotation.x=-Math.PI/2;
+    spaceFX.add(
+        meteor
+    );
 
-    ground.receiveShadow=true;
+    meteors.push({
 
-    cityGroup.add(ground);
+        m:meteor,
 
-    cityObjects.push(ground);
+        v:new THREE.Vector3(
 
-    return ground;
+            rand(-18,18),
+
+            -rand(20,55),
+
+            rand(-18,18)
+
+        )
+
+    });
+
 }
 
-createGround();
+
+/* ============================================================
+   CITY
+============================================================ */
+
+const city =
+    new THREE.Group();
+
+scene.add(city);
+
+
+const colliders=[];
+
+const interactables=[];
+
+const npcs=[];
+
+const vehicles=[];
+
+
+/* ============================================================
+   GROUND
+============================================================ */
+
+const ground =
+    new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            CFG.world,
+            CFG.world,
+            24,
+            24
+        ),
+
+        mat(0x536e48)
+
+    );
+
+ground.rotation.x =
+    -Math.PI/2;
+
+ground.receiveShadow=true;
+
+city.add(ground);
+
+colliders.push(
+    ground
+);
+
+
+/* ============================================================
+   BOX BUILDING
+============================================================ */
+
+function box(
+    x,
+    z,
+    width,
+    height,
+    depth,
+    color
+){
+
+    const mesh =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                width,
+                height,
+                depth
+            ),
+
+            mat(color)
+
+        );
+
+    mesh.position.set(
+        x,
+        height/2,
+        z
+    );
+
+    mesh.castShadow=true;
+
+    mesh.receiveShadow=true;
+
+    city.add(mesh);
+
+    colliders.push(mesh);
+
+    return mesh;
+
+}
+
 
 /* ============================================================
    ROADS
 ============================================================ */
 
-function createRoad(x,z,w,d){
-
-    const road=new THREE.Mesh(
-        new THREE.BoxGeometry(w,.04,d),
-        makeMaterial(0x24242b)
-    );
-
-    road.position.set(x,.02,z);
-
-    road.receiveShadow=true;
-
-    cityGroup.add(road);
-
-    for(let i=-w/2+2;i<w/2;i+=5){
-
-        const line=new THREE.Mesh(
-            new THREE.BoxGeometry(.2,.045,1.5),
-            makeMaterial(0xf3e7a1)
-        );
-
-        line.position.set(
-            x+i,
-            .06,
-            z
-        );
-
-        cityGroup.add(line);
-    }
-}
-
-createRoad(0,0,160,10);
-createRoad(0,0,10,160);
-createRoad(0,-35,160,7);
-createRoad(40,0,7,160);
-
-/* ============================================================
-   BUILDINGS
-============================================================ */
-
-function createBuilding(
+function road(
     x,
     z,
     width,
-    depth,
-    height,
-    color
+    depth
 ){
 
-    const group=new THREE.Group();
+    const mesh =
+        new THREE.Mesh(
 
-    const body=new THREE.Mesh(
-        new THREE.BoxGeometry(
-            width,
-            height,
-            depth
-        ),
-        makeMaterial(color)
-    );
-
-    body.position.y=height/2;
-
-    body.castShadow=true;
-    body.receiveShadow=true;
-
-    group.add(body);
-
-    const floors=Math.max(
-        1,
-        Math.floor(height/3)
-    );
-
-    for(let f=0;f<floors;f++){
-
-        const windows=Math.max(
-            1,
-            Math.floor(width/2)
-        );
-
-        for(let w=0;w<windows;w++){
-
-            const windowMesh=new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    .6,
-                    .8,
-                    .05
-                ),
-                makeMaterial(
-                    Math.random()>.5
-                        ? 0xffeeb0
-                        : 0x5ca7c7
-                )
-            );
-
-            windowMesh.position.set(
-                -width/2+
-                1+
-                w*(width-2)/(windows-1||1),
-
-                1.2+
-                f*3,
-
-                depth/2+.03
-            );
-
-            group.add(windowMesh);
-        }
-    }
-
-    group.position.set(x,0,z);
-
-    cityGroup.add(group);
-
-    cityObjects.push(body);
-
-    return group;
-}
-
-/* ============================================================
-   CITY BLOCKS
-============================================================ */
-
-function generateCity(){
-
-    const colors=[
-        0xc58b61,
-        0xd1a475,
-        0xb97c59,
-        0x8b91a8,
-        0xd4c4a4,
-        0x94785d,
-        0xb7a18b
-    ];
-
-    for(let x=-70;x<=70;x+=14){
-
-        for(let z=-70;z<=70;z+=14){
-
-            const nearRoad =
-                Math.abs(z)<7 ||
-                Math.abs(x)<7 ||
-                Math.abs(z+35)<5 ||
-                Math.abs(x-40)<5;
-
-            if(nearRoad) continue;
-
-            createBuilding(
-                x+rand(-2,2),
-                z+rand(-2,2),
-                rand(7,11),
-                rand(7,11),
-                rand(4,15),
-                colors[
-                    Math.floor(
-                        Math.random()*colors.length
-                    )
-                ]
-            );
-        }
-    }
-}
-
-generateCity();
-
-/* ============================================================
-   RAJWADA-INSPIRED LANDMARK
-============================================================ */
-
-function createRajwada(){
-
-    const group=new THREE.Group();
-
-    const stone=makeMaterial(0x9b6d4b);
-
-    const main=new THREE.Mesh(
-        new THREE.BoxGeometry(24,15,14),
-        stone
-    );
-
-    main.position.y=7.5;
-
-    group.add(main);
-
-    for(let i=0;i<7;i++){
-
-        const floor=new THREE.Mesh(
             new THREE.BoxGeometry(
-                19-i*1.2,
-                2,
-                11-i*.5
+                width,
+                .04,
+                depth
             ),
-            stone
+
+            mat(0x25262b)
+
         );
 
-        floor.position.y=
-            15+i*2;
+    mesh.position.set(
+        x,
+        .02,
+        z
+    );
 
-        group.add(floor);
+    city.add(mesh);
+
+
+    for(
+        let i=-width/2+2;
+        i<width/2;
+        i+=5
+    ){
+
+        const line =
+            new THREE.Mesh(
+
+                new THREE.BoxGeometry(
+                    .18,
+                    .045,
+                    1.5
+                ),
+
+                mat(0xf1df9a)
+
+            );
+
+        line.position.set(
+            x+i,
+            .05,
+            z
+        );
+
+        city.add(line);
+
     }
 
-    const gate=new THREE.Mesh(
-        new THREE.BoxGeometry(
-            7,
-            10,
-            .8
-        ),
-        makeMaterial(0x33241c)
-    );
+}
+
+
+road(
+    0,
+    0,
+    160,
+    10
+);
+
+road(
+    0,
+    0,
+    10,
+    160
+);
+
+road(
+    0,
+    -35,
+    160,
+    7
+);
+
+road(
+    40,
+    0,
+    7,
+    160
+);
+
+
+/* ============================================================
+   PROCEDURAL CITY
+============================================================ */
+
+const buildingColors=[
+
+    0xc58b61,
+
+    0xd1a475,
+
+    0xb97c59,
+
+    0x8b91a8,
+
+    0xd4c4a4,
+
+    0x94785d
+
+];
+
+
+for(
+    let x=-70;
+    x<=70;
+    x+=14
+){
+
+    for(
+        let z=-70;
+        z<=70;
+        z+=14
+    ){
+
+        if(
+            Math.abs(z)<7 ||
+            Math.abs(x)<7 ||
+            Math.abs(z+35)<5 ||
+            Math.abs(x-40)<5
+        )
+            continue;
+
+
+        box(
+
+            x+rand(-1,1),
+
+            z+rand(-1,1),
+
+            rand(7,11),
+
+            rand(4,14),
+
+            rand(7,11),
+
+            buildingColors[
+                Math.floor(
+                    Math.random()*
+                    buildingColors.length
+                )
+            ]
+
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   RAJWADA
+============================================================ */
+
+function landmarkRajwada(){
+
+    const group =
+        new THREE.Group();
+
+
+    for(
+        let i=0;
+        i<6;
+        i++
+    ){
+
+        const floor =
+            new THREE.Mesh(
+
+                new THREE.BoxGeometry(
+                    22-i*1.5,
+                    2,
+                    13-i*.6
+                ),
+
+                mat(0x9b6d4b)
+
+            );
+
+        floor.position.y =
+            1+i*2.3;
+
+        group.add(
+            floor
+        );
+
+    }
+
+
+    const gate =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                7,
+                9,
+                .8
+            ),
+
+            mat(0x302018)
+
+        );
 
     gate.position.set(
         0,
-        5,
-        7.2
+        4.5,
+        6.7
     );
 
-    group.add(gate);
+    group.add(
+        gate
+    );
+
 
     group.position.set(
         -40,
@@ -1313,94 +2496,91 @@ function createRajwada(){
         -45
     );
 
-    cityGroup.add(group);
-
-    const label=createTextSprite(
-        "RAJWADA • INDORE",
-        "#ffd69b"
+    city.add(
+        group
     );
 
-    label.position.set(
+
+    const title =
+        label(
+            "RAJWADA • INDORE",
+            "#ffd69b"
+        );
+
+    title.position.set(
         -40,
-        27,
+        18,
         -45
     );
 
-    cityGroup.add(label);
+    city.add(
+        title
+    );
+
 
     return group;
+
 }
 
-const rajwada=createRajwada();
+
+const rajwada =
+    landmarkRajwada();
+
 
 /* ============================================================
-   GOLGHAR-INSPIRED LANDMARK
+   GOLGHAR
 ============================================================ */
 
-function createGolghar(){
+function landmarkGolghar(){
 
-    const group=new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const dome=new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            10,
-            13,
-            15,
-            40
-        ),
-        makeMaterial(0xc69b67)
+
+    const base =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                10,
+                13,
+                15,
+                36
+            ),
+
+            mat(0xc69b67)
+
+        );
+
+    base.position.y=7.5;
+
+    group.add(
+        base
     );
 
-    dome.position.y=7.5;
 
-    group.add(dome);
+    const roof =
+        new THREE.Mesh(
 
-    const roof=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            10,
-            40,
-            20,
-            0,
-            Math.PI*2,
-            0,
-            Math.PI/2
-        ),
-        makeMaterial(0xb98957)
-    );
+            new THREE.SphereGeometry(
+                10,
+                32,
+                16,
+                0,
+                Math.PI*2,
+                0,
+                Math.PI/2
+            ),
+
+            mat(0xb98957)
+
+        );
 
     roof.position.y=15;
 
-    group.add(roof);
+    group.add(
+        roof
+    );
 
-    const stairGroup=new THREE.Group();
-
-    for(let i=0;i<40;i++){
-
-        const a=i*.25;
-
-        const step=new THREE.Mesh(
-            new THREE.BoxGeometry(
-                1.3,
-                .25,
-                3
-            ),
-            makeMaterial(0x8c6543)
-        );
-
-        step.position.set(
-            Math.cos(a)*12,
-            i*.38,
-            Math.sin(a)*12
-        );
-
-        step.lookAt(
-            new THREE.Vector3(0,step.position.y,0)
-        );
-
-        stairGroup.add(step);
-    }
-
-    group.add(stairGroup);
 
     group.position.set(
         45,
@@ -1408,300 +2588,400 @@ function createGolghar(){
         -40
     );
 
-    cityGroup.add(group);
-
-    const label=createTextSprite(
-        "GOLGHAR • PATNA",
-        "#ffe1a8"
+    city.add(
+        group
     );
 
-    label.position.set(
+
+    const title =
+        label(
+            "GOLGHAR • PATNA",
+            "#ffe1a8"
+        );
+
+    title.position.set(
         45,
-        23,
+        22,
         -40
     );
 
-    cityGroup.add(label);
+    city.add(
+        title
+    );
+
 
     return group;
+
 }
 
-const golghar=createGolghar();
+
+const golghar =
+    landmarkGolghar();
+
 
 /* ============================================================
-   CAFE
+   VENUES
 ============================================================ */
 
-function createCafe(){
+function venue(
+    x,
+    z,
+    name,
+    color
+){
 
-    const group=new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const building=new THREE.Mesh(
-        new THREE.BoxGeometry(14,5,10),
-        makeMaterial(0x8f5f75)
-    );
+
+    const building =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                14,
+                5,
+                10
+            ),
+
+            mat(color)
+
+        );
 
     building.position.y=2.5;
 
-    group.add(building);
-
-    const roof=new THREE.Mesh(
-        new THREE.BoxGeometry(15,.5,11),
-        makeMaterial(0x33233a)
+    group.add(
+        building
     );
 
-    roof.position.y=5.2;
 
-    group.add(roof);
+    const title =
+        label(
+            name,
+            "#ffd5ec"
+        );
 
-    const sign=createTextSprite(
-        "♥ STARLIGHT CAFE",
-        "#ff92ca"
+    title.position.y=7;
+
+    group.add(
+        title
     );
 
-    sign.position.y=7;
-
-    group.add(sign);
 
     group.position.set(
+        x,
+        0,
+        z
+    );
+
+    city.add(
+        group
+    );
+
+
+    return group;
+
+}
+
+
+const cafe =
+    venue(
         20,
-        0,
-        28
+        28,
+        "♥ STARLIGHT CAFE",
+        0x8f5f75
     );
 
-    cityGroup.add(group);
 
-    return group;
-}
-
-const cafe=createCafe();
-
-/* ============================================================
-   RESTAURANT
-============================================================ */
-
-function createRestaurant(){
-
-    const group=new THREE.Group();
-
-    const body=new THREE.Mesh(
-        new THREE.BoxGeometry(13,4,9),
-        makeMaterial(0x6b5146)
-    );
-
-    body.position.y=2;
-
-    group.add(body);
-
-    const sign=createTextSprite(
-        "MOONLIGHT RESTAURANT",
-        "#ffe5b0"
-    );
-
-    sign.position.y=6;
-
-    group.add(sign);
-
-    group.position.set(
+const restaurant =
+    venue(
         -20,
-        0,
-        30
+        30,
+        "MOONLIGHT RESTAURANT",
+        0x6b5146
     );
 
-    cityGroup.add(group);
-
-    return group;
-}
-
-createRestaurant();
 
 /* ============================================================
    TREES
 ============================================================ */
 
-function createTree(x,z){
+function tree(
+    x,
+    z
+){
 
-    const group=new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const trunk=new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            .25,
-            .4,
-            3,
-            8
-        ),
-        makeMaterial(0x65452c)
-    );
+
+    const trunk =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                .25,
+                .4,
+                3,
+                8
+            ),
+
+            mat(0x65452c)
+
+        );
 
     trunk.position.y=1.5;
 
-    group.add(trunk);
-
-    const leaves=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            2.2,
-            10,
-            10
-        ),
-        makeMaterial(
-            Math.random()>.5
-                ? 0x2e7d4b
-                : 0x397f4d
-        )
+    group.add(
+        trunk
     );
+
+
+    const leaves =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                2.2,
+                10,
+                10
+            ),
+
+            mat(
+                Math.random()>.5
+                ?0x2e7d4b
+                :0x397f4d
+            )
+
+        );
 
     leaves.position.y=4;
 
     leaves.castShadow=true;
 
-    group.add(leaves);
+    group.add(
+        leaves
+    );
 
-    group.position.set(x,0,z);
 
-    cityGroup.add(group);
+    group.position.set(
+        x,
+        0,
+        z
+    );
 
-    return group;
+    city.add(
+        group
+    );
+
 }
 
-for(let i=0;i<100;i++){
 
-    let x=rand(-75,75);
-    let z=rand(-75,75);
+for(
+    let i=0;
+    i<75;
+    i++
+){
 
-    if(Math.abs(x)<12 || Math.abs(z)<12)
+    const x=rand(-74,74);
+    const z=rand(-74,74);
+
+    if(
+        Math.abs(x)<12 ||
+        Math.abs(z)<12
+    )
         continue;
 
-    createTree(x,z);
+    tree(x,z);
+
 }
+
 
 /* ============================================================
    FLOWERS
 ============================================================ */
 
-function createFlower(x,z){
+function flower(
+    x,
+    z
+){
 
-    const group=new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const stem=new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            .03,
-            .03,
-            .5,
-            5
-        ),
-        makeMaterial(0x2f8a4d)
-    );
+
+    const stem =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                .03,
+                .03,
+                .5,
+                5
+            ),
+
+            mat(0x2f8a4d)
+
+        );
 
     stem.position.y=.25;
 
-    group.add(stem);
-
-    const flower=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            .22,
-            8,
-            8
-        ),
-        makeMaterial(
-            Math.random()>.5
-                ? 0xff5f9a
-                : 0xffd65f
-        )
+    group.add(
+        stem
     );
 
-    flower.position.y=.55;
 
-    group.add(flower);
+    const flowerHead =
+        new THREE.Mesh(
 
-    group.position.set(x,0,z);
+            new THREE.SphereGeometry(
+                .22,
+                8,
+                8
+            ),
 
-    cityGroup.add(group);
+            mat(
+                Math.random()>.5
+                ?0xff5f9a
+                :0xffd65f
+            )
 
-    return group;
+        );
+
+    flowerHead.position.y=.55;
+
+    group.add(
+        flowerHead
+    );
+
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    city.add(
+        group
+    );
+
 }
 
-for(let i=0;i<150;i++){
 
-    createFlower(
+for(
+    let i=0;
+    i<100;
+    i++
+){
+
+    flower(
         rand(-70,70),
         rand(-70,70)
     );
+
 }
 
+
 /* ============================================================
-   CHARACTER CREATION
+   CHARACTERS
 ============================================================ */
 
-function createCharacter(
+function character(
     bodyColor,
     skinColor,
     hairColor
 ){
 
-    const root=new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const body=new THREE.Mesh(
-        new THREE.CapsuleGeometry(
-            .48,
-            1.2,
-            6,
-            12
-        ),
-        makeMaterial(bodyColor)
-    );
+
+    const body =
+        new THREE.Mesh(
+
+            new THREE.CapsuleGeometry(
+                .48,
+                1.2,
+                6,
+                12
+            ),
+
+            mat(bodyColor)
+
+        );
 
     body.position.y=1.3;
 
     body.castShadow=true;
 
-    root.add(body);
-
-    const head=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            .38,
-            16,
-            16
-        ),
-        makeMaterial(skinColor)
+    group.add(
+        body
     );
+
+
+    const head =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                .38,
+                16,
+                16
+            ),
+
+            mat(skinColor)
+
+        );
 
     head.position.y=2.35;
 
-    head.castShadow=true;
-
-    root.add(head);
-
-    const hair=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            .41,
-            16,
-            16,
-            0,
-            Math.PI*2,
-            0,
-            Math.PI*.65
-        ),
-        makeMaterial(hairColor)
+    group.add(
+        head
     );
+
+
+    const hair =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                .41,
+                16,
+                16,
+                0,
+                Math.PI*2,
+                0,
+                Math.PI*.65
+            ),
+
+            mat(hairColor)
+
+        );
 
     hair.position.y=2.5;
 
-    root.add(hair);
-
-    const armMaterial=
-        makeMaterial(skinColor);
-
-    const leftArm=new THREE.Mesh(
-        new THREE.CapsuleGeometry(
-            .13,
-            .65,
-            5,
-            8
-        ),
-        armMaterial
+    group.add(
+        hair
     );
 
-    const rightArm=leftArm.clone();
+
+    const armMaterial =
+        mat(skinColor);
+
+
+    const leftArm =
+        new THREE.Mesh(
+
+            new THREE.CapsuleGeometry(
+                .13,
+                .65,
+                5,
+                8
+            ),
+
+            armMaterial
+
+        );
+
+
+    const rightArm =
+        leftArm.clone();
+
 
     leftArm.position.set(
         -.62,
@@ -1715,23 +2995,35 @@ function createCharacter(
         0
     );
 
-    root.add(leftArm);
-    root.add(rightArm);
 
-    const legMaterial=
-        makeMaterial(0x20243a);
-
-    const leftLeg=new THREE.Mesh(
-        new THREE.CapsuleGeometry(
-            .16,
-            .7,
-            5,
-            8
-        ),
-        legMaterial
+    group.add(
+        leftArm,
+        rightArm
     );
 
-    const rightLeg=leftLeg.clone();
+
+    const legMaterial =
+        mat(0x20243a);
+
+
+    const leftLeg =
+        new THREE.Mesh(
+
+            new THREE.CapsuleGeometry(
+                .16,
+                .7,
+                5,
+                8
+            ),
+
+            legMaterial
+
+        );
+
+
+    const rightLeg =
+        leftLeg.clone();
+
 
     leftLeg.position.set(
         -.22,
@@ -1745,33 +3037,41 @@ function createCharacter(
         0
     );
 
-    root.add(leftLeg);
-    root.add(rightLeg);
 
-    root.userData.parts={
-        body,
-        head,
-        hair,
+    group.add(
+        leftLeg,
+        rightLeg
+    );
+
+
+    group.userData.parts={
         leftArm,
         rightArm,
         leftLeg,
         rightLeg
     };
 
-    return root;
+
+    return group;
+
 }
 
-const player=createCharacter(
-    0x315cff,
-    0xd59c76,
-    0x1e1720
-);
 
-const companion=createCharacter(
-    0xff4f9b,
-    0xe0aa82,
-    0x54213f
-);
+const player =
+    character(
+        0x315cff,
+        0xd59c76,
+        0x1e1720
+    );
+
+
+const girl =
+    character(
+        0xff4f9b,
+        0xe0aa82,
+        0x54213f
+    );
+
 
 player.position.set(
     0,
@@ -1779,669 +3079,259 @@ player.position.set(
     12
 );
 
-companion.position.set(
-    1.5,
+girl.position.set(
+    1.7,
     0,
     12
 );
 
-cityGroup.add(player);
-cityGroup.add(companion);
+
+city.add(
+    player,
+    girl
+);
+
 
 /* ============================================================
    CHARACTER STATE
 ============================================================ */
 
 const playerState={
-    velocity:new THREE.Vector3(),
+
+    velocityY:0,
+
     grounded:true,
-    direction:0,
+
     moving:false
+
 };
 
-const companionState={
-    velocity:new THREE.Vector3(),
-    grounded:true
-};
 
-/* ============================================================
-   INPUT
-============================================================ */
+let yaw=0;
 
-const keys={};
+let runHeld=false;
 
-window.addEventListener(
-    "keydown",
-    e=>{
-        keys[e.key.toLowerCase()]=true;
-
-        if(e.key.toLowerCase()==="e")
-            interact();
-
-        if(e.key.toLowerCase()==="f")
-            toggleHandHold();
-
-        if(e.key.toLowerCase()==="i")
-            toggleInventory();
-
-        if(e.code==="Space")
-            jump();
-
-        if(e.key==="Shift")
-            keys.shift=true;
-    }
-);
-
-window.addEventListener(
-    "keyup",
-    e=>{
-        keys[e.key.toLowerCase()]=false;
-
-        if(e.key==="Shift")
-            keys.shift=false;
-    }
-);
-
-/* ============================================================
-   TOUCH JOYSTICK
-============================================================ */
-
-const joystick=
-    document.getElementById("joystick");
-
-const stick=
-    document.getElementById("stick");
-
-const joy={
-    x:0,
-    y:0,
-    active:false
-};
-
-joystick.addEventListener(
-    "pointerdown",
-    e=>{
-        joy.active=true;
-        joystick.setPointerCapture(e.pointerId);
-        updateJoystick(e);
-    }
-);
-
-joystick.addEventListener(
-    "pointermove",
-    e=>{
-        if(joy.active)
-            updateJoystick(e);
-    }
-);
-
-joystick.addEventListener(
-    "pointerup",
-    resetJoystick
-);
-
-joystick.addEventListener(
-    "pointercancel",
-    resetJoystick
-);
-
-function updateJoystick(e){
-
-    const rect=joystick.getBoundingClientRect();
-
-    let x=
-        e.clientX-
-        (rect.left+rect.width/2);
-
-    let y=
-        e.clientY-
-        (rect.top+rect.height/2);
-
-    const max=40;
-
-    const len=Math.sqrt(x*x+y*y);
-
-    if(len>max){
-
-        x=x/len*max;
-        y=y/len*max;
-    }
-
-    joy.x=x/max;
-    joy.y=y/max;
-
-    stick.style.transform=
-        `translate(${x}px,${y}px)`;
-}
-
-function resetJoystick(){
-
-    joy.x=0;
-    joy.y=0;
-    joy.active=false;
-
-    stick.style.transform=
-        "translate(0,0)";
-}
-
-/* ============================================================
-   BUTTONS
-============================================================ */
-
-document
-    .getElementById("jumpBtn")
-    .addEventListener("pointerdown",jump);
-
-document
-    .getElementById("runBtn")
-    .addEventListener(
-        "pointerdown",
-        ()=>{
-            keys.shift=true;
-        }
-    );
-
-document
-    .getElementById("runBtn")
-    .addEventListener(
-        "pointerup",
-        ()=>{
-            keys.shift=false;
-        }
-    );
-
-document
-    .getElementById("interactBtn")
-    .addEventListener(
-        "pointerdown",
-        interact
-    );
-
-document
-    .getElementById("holdBtn")
-    .addEventListener(
-        "pointerdown",
-        toggleHandHold
-    );
-
-document
-    .getElementById("menuBtn")
-    .addEventListener(
-        "pointerdown",
-        ()=>{
-            const m=document.getElementById("menu");
-
-            m.style.display=
-                m.style.display==="block"
-                ?"none"
-                :"block";
-        }
-    );
-
-document
-    .getElementById("inventoryBtn")
-    .addEventListener(
-        "click",
-        toggleInventory
-    );
-
-document
-    .getElementById("dayBtn")
-    .addEventListener(
-        "click",
-        toggleDay
-    );
-
-document
-    .getElementById("galaxyBtn")
-    .addEventListener(
-        "click",
-        ()=>setMode("galaxy")
-    );
-
-document
-    .getElementById("cityBtn")
-    .addEventListener(
-        "click",
-        ()=>setMode("city")
-    );
-
-document
-    .getElementById("fullBtn")
-    .addEventListener(
-        "click",
-        ()=>{
-            document.documentElement.requestFullscreen?.();
-        }
-    );
-
-/* ============================================================
-   CAMERA TOUCH LOOK
-============================================================ */
-
-let lookActive=false;
-let lastX=0;
-
-renderer.domElement.addEventListener(
-    "pointerdown",
-    e=>{
-        if(e.pointerType==="touch"){
-            lookActive=true;
-            lastX=e.clientX;
-        }
-    }
-);
-
-renderer.domElement.addEventListener(
-    "pointermove",
-    e=>{
-        if(!lookActive)
-            return;
-
-        if(e.pointerType!=="touch")
-            return;
-
-        const dx=e.clientX-lastX;
-
-        cameraYaw-=dx*.006;
-
-        lastX=e.clientX;
-    }
-);
-
-renderer.domElement.addEventListener(
-    "pointerup",
-    ()=>{
-        lookActive=false;
-    }
-);
-
-/* ============================================================
-   PLAYER MOVEMENT
-============================================================ */
-
-let cameraYaw=0;
-
-function getMovement(){
-
-    let x=0;
-    let z=0;
-
-    if(keys.w)
-        z-=1;
-
-    if(keys.s)
-        z+=1;
-
-    if(keys.a)
-        x-=1;
-
-    if(keys.d)
-        x+=1;
-
-    x+=joy.x;
-    z+=joy.y;
-
-    const length=Math.sqrt(
-        x*x+z*z
-    );
-
-    if(length>1){
-
-        x/=length;
-        z/=length;
-    }
-
-    return {x,z};
-}
-
-function jump(){
-
-    if(
-        GAME.mode==="city" &&
-        playerState.grounded
-    ){
-
-        playerState.velocity.y=
-            CONFIG.jumpPower;
-
-        playerState.grounded=false;
-    }
-}
-
-/* ============================================================
-   SIMPLE WORLD COLLISION
-============================================================ */
-
-function keepInsideWorld(object){
-
-    object.position.x=
-        clamp(
-            object.position.x,
-            -75,
-            75
-        );
-
-    object.position.z=
-        clamp(
-            object.position.z,
-            -75,
-            75
-        );
-}
-
-function resolveBuildingCollision(){
-
-    const p=player.position;
-
-    for(const object of cityObjects){
-
-        if(!object.geometry)
-            continue;
-
-        const box=
-            new THREE.Box3()
-                .setFromObject(object);
-
-        const closest=new THREE.Vector3(
-            clamp(
-                p.x,
-                box.min.x,
-                box.max.x
-            ),
-            p.y,
-            clamp(
-                p.z,
-                box.min.z,
-                box.max.z
-            )
-        );
-
-        const dist=p.distanceTo(
-            closest
-        );
-
-        if(
-            dist<CONFIG.playerRadius
-        ){
-
-            const dx=p.x-closest.x;
-            const dz=p.z-closest.z;
-
-            if(
-                Math.abs(dx)>
-                Math.abs(dz)
-            ){
-
-                p.x+=
-                    dx>0
-                    ?CONFIG.playerRadius-dist
-                    :-(CONFIG.playerRadius-dist);
-
-            }else{
-
-                p.z+=
-                    dz>0
-                    ?CONFIG.playerRadius-dist
-                    :-(CONFIG.playerRadius-dist);
-            }
-        }
-    }
-}
-
-/* ============================================================
-   PLAYER UPDATE
-============================================================ */
-
-function updatePlayer(dt){
-
-    if(GAME.mode!=="city")
-        return;
-
-    const movement=getMovement();
-
-    const moving=
-        Math.abs(movement.x)+
-        Math.abs(movement.z)>.05;
-
-    playerState.moving=moving;
-
-    const speed=
-        keys.shift
-        ?CONFIG.runSpeed
-        :CONFIG.walkSpeed;
-
-    const forward=new THREE.Vector3(
-        Math.sin(cameraYaw),
-        0,
-        Math.cos(cameraYaw)
-    );
-
-    const right=new THREE.Vector3(
-        Math.cos(cameraYaw),
-        0,
-        -Math.sin(cameraYaw)
-    );
-
-    const direction=new THREE.Vector3();
-
-    direction.addScaledVector(
-        right,
-        movement.x
-    );
-
-    direction.addScaledVector(
-        forward,
-        movement.z
-    );
-
-    if(direction.length()>0){
-
-        direction.normalize();
-
-        player.position.addScaledVector(
-            direction,
-            speed*dt
-        );
-
-        player.rotation.y=
-            Math.atan2(
-                direction.x,
-                direction.z
-            );
-    }
-
-    playerState.velocity.y+=
-        CONFIG.gravity*dt;
-
-    player.position.y+=
-        playerState.velocity.y*dt;
-
-    if(player.position.y<=0){
-
-        player.position.y=0;
-
-        playerState.velocity.y=0;
-
-        playerState.grounded=true;
-    }
-
-    resolveBuildingCollision();
-
-    keepInsideWorld(player);
-
-    animateCharacter(
-        player,
-        moving,
-        GAME.time
-    );
-}
-
-/* ============================================================
-   COMPANION AI
-============================================================ */
-
-function updateCompanion(dt){
-
-    if(GAME.mode!=="city")
-        return;
-
-    let target;
-
-    if(GAME.handHolding){
-
-        const handOffset=
-            new THREE.Vector3(
-                1.5,
-                0,
-                .1
-            );
-
-        handOffset.applyAxisAngle(
-            new THREE.Vector3(0,1,0),
-            player.rotation.y
-        );
-
-        target=
-            player.position.clone()
-            .add(handOffset);
-
-    }else{
-
-        const desired=
-            new THREE.Vector3(
-                1.8,
-                0,
-                2
-            );
-
-        desired.applyAxisAngle(
-            new THREE.Vector3(0,1,0),
-            player.rotation.y
-        );
-
-        target=
-            player.position.clone()
-            .add(desired);
-    }
-
-    const delta=
-        target.clone()
-        .sub(companion.position);
-
-    const dist=delta.length();
-
-    if(dist>.3){
-
-        delta.normalize();
-
-        const speed=
-            GAME.handHolding
-            ?CONFIG.walkSpeed
-            :CONFIG.walkSpeed*.85;
-
-        companion.position.addScaledVector(
-            delta,
-            Math.min(
-                speed*dt,
-                dist
-            )
-        );
-
-        companion.rotation.y=
-            Math.atan2(
-                delta.x,
-                delta.z
-            );
-    }
-
-    companion.position.y=0;
-
-    animateCharacter(
-        companion,
-        dist>.4,
-        GAME.time
-    );
-}
 
 /* ============================================================
    CHARACTER ANIMATION
 ============================================================ */
 
 function animateCharacter(
-    character,
+    object,
     moving,
     time
 ){
 
-    const p=
-        character.userData.parts;
+    const parts =
+        object.userData.parts;
 
-    const swing=
+
+    const swing =
         moving
-        ?Math.sin(time*10)*.5
-        :0;
+        ? Math.sin(time*10)*.45
+        : 0;
 
-    p.leftLeg.rotation.x=swing;
-    p.rightLeg.rotation.x=-swing;
 
-    p.leftArm.rotation.x=-swing*.8;
-    p.rightArm.rotation.x=swing*.8;
+    parts.leftLeg.rotation.x =
+        swing;
 
-    if(
-        character===player &&
-        GAME.handHolding
-    ){
+    parts.rightLeg.rotation.x =
+        -swing;
 
-        p.rightArm.rotation.z=-.8;
-        p.rightArm.rotation.x=.3;
 
-        const cp=
-            companion.userData.parts;
+    parts.leftArm.rotation.x =
+        -swing*.8;
 
-        cp.leftArm.rotation.z=.8;
-        cp.leftArm.rotation.x=.3;
-    }
-}
+    parts.rightArm.rotation.x =
+        swing*.8;
 
-/* ============================================================
-   HAND HOLD
-============================================================ */
-
-function toggleHandHold(){
 
     if(
-        distance(
-            player.position,
-            companion.position
-        )<3
+        object===player &&
+        S.holding
     ){
 
-        GAME.handHolding=
-            !GAME.handHolding;
+        parts.rightArm.rotation.z =
+            -.8;
 
-        if(GAME.handHolding){
+        parts.rightArm.rotation.x =
+            .3;
 
-            showDialogue(
-                "Her",
-                "Come on. Let's see what this little universe has for us."
-            );
 
-        }else{
+        girl.userData.parts
+            .leftArm
+            .rotation.z=.8;
 
-            showDialogue(
-                "Her",
-                "Okay... but don't wander too far."
-            );
-        }
+        girl.userData.parts
+            .leftArm
+            .rotation.x=.3;
+
     }
+
 }
 
+
 /* ============================================================
-   INTERACTABLE OBJECTS
+   NPCs
 ============================================================ */
 
-const interactables=[];
+for(
+    let i=0;
+    i<CFG.npcs;
+    i++
+){
+
+    const npc =
+        character(
+
+            [
+                0x8d62aa,
+                0x3e8fc5,
+                0xa66b48,
+                0x477e57
+            ][i%4],
+
+            0xc98f70,
+
+            0x211a20
+
+        );
+
+
+    npc.scale.setScalar(
+        rand(.8,1)
+    );
+
+
+    npc.position.set(
+        rand(-68,68),
+        0,
+        rand(-68,68)
+    );
+
+
+    city.add(
+        npc
+    );
+
+
+    npcs.push({
+
+        object:npc,
+
+        angle:
+            Math.random()*
+            Math.PI*2,
+
+        radius:
+            rand(5,18),
+
+        speed:
+            rand(.12,.35),
+
+        origin:
+            npc.position.clone()
+
+    });
+
+}
+
+
+/* ============================================================
+   VEHICLES
+============================================================ */
+
+for(
+    let i=0;
+    i<CFG.vehicles;
+    i++
+){
+
+    const vehicle =
+        new THREE.Group();
+
+
+    const body =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                2,
+                .8,
+                3.2
+            ),
+
+            mat(
+                i%2
+                ?0x2a8cff
+                :0xffa62e
+            )
+
+        );
+
+    body.position.y=.65;
+
+    vehicle.add(
+        body
+    );
+
+
+    const cabin =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                1.7,
+                .7,
+                1.5
+            ),
+
+            mat(0x20232b)
+
+        );
+
+    cabin.position.y=1.3;
+
+    vehicle.add(
+        cabin
+    );
+
+
+    vehicle.position.set(
+
+        rand(-70,70),
+
+        0,
+
+        i%2
+        ?5
+        :-5
+
+    );
+
+
+    city.add(
+        vehicle
+    );
+
+
+    vehicles.push({
+
+        object:vehicle,
+
+        speed:rand(2,5),
+
+        direction:
+            i%2
+            ?1
+            :-1
+
+    });
+
+}
+
+
+/* ============================================================
+   PICKUP SYSTEM
+============================================================ */
 
 function addInteractable(
     name,
@@ -2450,406 +3340,1096 @@ function addInteractable(
     action
 ){
 
-    const marker=
+    const colors={
+
+        flower:0xff55aa,
+
+        chocolate:0x6b351c,
+
+        gift:0xffd43b,
+
+        letter:0x9a75ff,
+
+        star:0xffffff
+
+    };
+
+
+    const mesh =
         new THREE.Mesh(
+
             new THREE.SphereGeometry(
                 .45,
                 12,
                 12
             ),
+
             new THREE.MeshBasicMaterial({
+
                 color:
-                    type==="flower"
-                    ?0xff55aa
-                    :type==="chocolate"
-                    ?0x6b351c
-                    :type==="gift"
-                    ?0xffd43b
-                    :0x8e65ff
+                    colors[type]
+
             })
+
         );
 
-    marker.position.copy(position);
 
-    marker.position.y+=.8;
+    mesh.position.copy(
+        position
+    );
 
-    cityGroup.add(marker);
+    mesh.position.y=.7;
 
-    const label=
-        createTextSprite(
+
+    city.add(
+        mesh
+    );
+
+
+    const text =
+        label(
             name,
             "#ffffff"
         );
 
-    label.position.copy(
-        marker.position
+
+    text.position.copy(
+        mesh.position
     );
 
-    label.position.y+=1.1;
+    text.position.y+=1.1;
 
-    cityGroup.add(label);
+    city.add(
+        text
+    );
 
-    const item={
+
+    interactables.push({
+
         name,
-        position:marker.position,
+
+        position:
+            mesh.position,
+
         type,
+
         action,
-        marker
-    };
 
-    interactables.push(item);
+        mesh,
 
-    return item;
+        text
+
+    });
+
 }
 
+
 /* ============================================================
-   QUEST SYSTEM
+   QUEST OBJECTS
+============================================================ */
+
+addInteractable(
+
+    "ROSE",
+
+    new THREE.Vector3(
+        -10,
+        0,
+        20
+    ),
+
+    "flower",
+
+    ()=>{
+
+        S.inv.rose++;
+
+        say(
+            "Her",
+            "A flower? For me? You are making this birthday dangerously cute."
+        );
+
+    }
+
+);
+
+
+addInteractable(
+
+    "CHOCOLATE",
+
+    new THREE.Vector3(
+        25,
+        0,
+        28
+    ),
+
+    "chocolate",
+
+    ()=>{
+
+        S.inv.chocolate++;
+
+        say(
+            "Her",
+            "You remembered chocolate. I knew I liked you."
+        );
+
+    }
+
+);
+
+
+addInteractable(
+
+    "BIRTHDAY GIFT",
+
+    new THREE.Vector3(
+        -25,
+        0,
+        -5
+    ),
+
+    "gift",
+
+    ()=>{
+
+        S.inv.gift++;
+
+        say(
+            "Her",
+            "Wait… that is for me?"
+        );
+
+    }
+
+);
+
+
+addInteractable(
+
+    "LOVE LETTER",
+
+    new THREE.Vector3(
+        5,
+        0,
+        -25
+    ),
+
+    "letter",
+
+    ()=>{
+
+        S.inv.letter++;
+
+        say(
+            "Her",
+            "I think I need a minute after reading this."
+        );
+
+    }
+
+);
+
+
+for(
+    let i=0;
+    i<5;
+    i++
+){
+
+    addInteractable(
+
+        "STAR FRAGMENT",
+
+        new THREE.Vector3(
+            rand(-60,60),
+            0,
+            rand(-60,60)
+        ),
+
+        "star",
+
+        ()=>{
+
+            S.inv.star++;
+
+            say(
+                "Her",
+                "Another tiny piece of the universe."
+            );
+
+        }
+
+    );
+
+}
+
+
+/* ============================================================
+   QUESTS
 ============================================================ */
 
 const quests=[
 
-    {
-        id:"start",
-        text:"Explore the world together.",
-        trigger:()=>true
-    },
+    [
+        "Explore the world together.",
+        ()=>true
+    ],
 
-    {
-        id:"flower",
-        text:"Find a flower and give it to her.",
-        trigger:()=>GAME.inventory.rose>=1
-    },
+    [
+        "Find a flower and give it to her.",
+        ()=>S.inv.rose>0
+    ],
 
-    {
-        id:"cafe",
-        text:"Visit Starlight Cafe together.",
-        trigger:()=>GAME.completed.cafe
-    },
+    [
+        "Visit Starlight Cafe together.",
+        ()=>S.done.cafe
+    ],
 
-    {
-        id:"chocolate",
-        text:"Find chocolate for her.",
-        trigger:()=>GAME.inventory.chocolate>=1
-    },
+    [
+        "Find chocolate for her.",
+        ()=>S.inv.chocolate>0
+    ],
 
-    {
-        id:"gift",
-        text:"Find the birthday gift.",
-        trigger:()=>GAME.inventory.gift>=1
-    },
+    [
+        "Find the birthday gift.",
+        ()=>S.inv.gift>0
+    ],
 
-    {
-        id:"letter",
-        text:"Find the hidden love letter.",
-        trigger:()=>GAME.inventory.letter>=1
-    },
+    [
+        "Find the hidden love letter.",
+        ()=>S.inv.letter>0
+    ],
 
-    {
-        id:"indore",
-        text:"Visit Rajwada in Indore.",
-        trigger:()=>GAME.completed.rajwada
-    },
+    [
+        "Visit Rajwada in Indore.",
+        ()=>S.done.rajwada
+    ],
 
-    {
-        id:"patna",
-        text:"Travel to Patna and discover Golghar.",
-        trigger:()=>GAME.completed.golghar
-    },
+    [
+        "Travel to Patna and discover Golghar.",
+        ()=>S.done.golghar
+    ],
 
-    {
-        id:"stars",
-        text:"Collect three fragments from the stars.",
-        trigger:()=>GAME.inventory.star>=3
-    },
+    [
+        "Collect three star fragments.",
+        ()=>S.inv.star>=3
+    ],
 
-    {
-        id:"final",
-        text:"Watch the meteor shower together.",
-        trigger:()=>GAME.completed.meteor
-    }
+    [
+        "Watch the meteor shower together.",
+        ()=>S.done.meteor
+    ]
 
 ];
 
+
 function updateQuest(){
 
-    for(
-        let i=GAME.objectiveIndex;
-        i<quests.length;
-        i++
+    while(
+
+        S.objective <
+        quests.length &&
+
+        quests[
+            S.objective
+        ][1]()
+
     ){
 
-        const quest=quests[i];
+        S.objective++;
+
+    }
+
+
+    if(
+        S.objective>=
+        quests.length
+    ){
+
+        finishGame();
+
+        return;
+
+    }
+
+
+    $("objectiveText")
+        .textContent =
+            quests[
+                S.objective
+            ][0];
+
+}
+
+
+/* ============================================================
+   INPUT
+============================================================ */
+
+const keys={};
+
+
+addEventListener(
+    "keydown",
+    event=>{
+
+        keys[
+            event.key.toLowerCase()
+        ]=true;
+
 
         if(
-            quest.trigger() &&
-            !GAME.completed[quest.id]
+            event.key===" "
+        )
+            jump();
+
+
+        if(
+            event.key.toLowerCase()==="e"
+        )
+            interact();
+
+
+        if(
+            event.key.toLowerCase()==="f"
+        )
+            toggleHold();
+
+
+        if(
+            event.key.toLowerCase()==="i"
+        )
+            toggleInventory();
+
+    }
+);
+
+
+addEventListener(
+    "keyup",
+    event=>{
+
+        keys[
+            event.key.toLowerCase()
+        ]=false;
+
+    }
+);
+
+
+/* ============================================================
+   MOBILE JOYSTICK
+============================================================ */
+
+const joystickBase =
+    $("stickBase");
+
+const joystickStick =
+    $("stick");
+
+
+const joystick={
+
+    x:0,
+
+    y:0,
+
+    active:false
+
+};
+
+
+function updateJoystick(
+    event
+){
+
+    const rect =
+        joystickBase
+        .getBoundingClientRect();
+
+
+    let x =
+        event.clientX -
+        (
+            rect.left +
+            rect.width/2
+        );
+
+
+    let y =
+        event.clientY -
+        (
+            rect.top +
+            rect.height/2
+        );
+
+
+    const max=40;
+
+    const length =
+        Math.hypot(
+            x,
+            y
+        );
+
+
+    if(
+        length>max
+    ){
+
+        x =
+            x/length*max;
+
+        y =
+            y/length*max;
+
+    }
+
+
+    joystick.x =
+        x/max;
+
+    joystick.y =
+        y/max;
+
+
+    joystickStick.style.transform =
+        `translate(${x}px,${y}px)`;
+
+}
+
+
+joystickBase.addEventListener(
+    "pointerdown",
+    event=>{
+
+        joystick.active=true;
+
+        joystickBase
+            .setPointerCapture(
+                event.pointerId
+            );
+
+        updateJoystick(event);
+
+    }
+);
+
+
+joystickBase.addEventListener(
+    "pointermove",
+    event=>{
+
+        if(
+            joystick.active
+        )
+            updateJoystick(
+                event
+            );
+
+    }
+);
+
+
+function resetJoystick(){
+
+    joystick.active=false;
+
+    joystick.x=0;
+
+    joystick.y=0;
+
+    joystickStick.style.transform=
+        "translate(0,0)";
+
+}
+
+
+joystickBase.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+joystickBase.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
+
+
+/* ============================================================
+   TOUCH CAMERA
+============================================================ */
+
+let cameraTouch=false;
+
+let lastTouchX=0;
+
+
+renderer.domElement.addEventListener(
+    "pointerdown",
+    event=>{
+
+        if(
+            event.pointerType==="touch"
         ){
 
-            GAME.completed[quest.id]=true;
+            cameraTouch=true;
 
-            if(i===GAME.objectiveIndex){
+            lastTouchX=
+                event.clientX;
 
-                GAME.objectiveIndex++;
-
-                if(
-                    GAME.objectiveIndex>=
-                    quests.length
-                ){
-
-                    finalBirthday();
-
-                }else{
-
-                    document.getElementById(
-                        "objectiveText"
-                    ).textContent=
-                        quests[
-                            GAME.objectiveIndex
-                        ].text;
-                }
-            }
         }
 
-        else break;
     }
-}
+);
+
+
+renderer.domElement.addEventListener(
+    "pointermove",
+    event=>{
+
+        if(
+            cameraTouch &&
+            event.pointerType==="touch"
+        ){
+
+            yaw -=
+                (
+                    event.clientX -
+                    lastTouchX
+                )*.006;
+
+            lastTouchX=
+                event.clientX;
+
+        }
+
+    }
+);
+
+
+renderer.domElement.addEventListener(
+    "pointerup",
+    ()=>{
+        cameraTouch=false;
+    }
+);
+
 
 /* ============================================================
-   PICKUPS
+   MOVEMENT INPUT
 ============================================================ */
 
-addInteractable(
-    "ROSE",
-    new THREE.Vector3(-10,.5,20),
-    "flower",
-    ()=>{
-        GAME.inventory.rose++;
+function movementInput(){
 
-        showDialogue(
-            "Her",
-            "A flower? For me? You're already making this birthday unfairly cute."
+    let x=0;
+
+    let z=0;
+
+
+    if(keys.a)
+        x-=1;
+
+    if(keys.d)
+        x+=1;
+
+    if(keys.w)
+        z-=1;
+
+    if(keys.s)
+        z+=1;
+
+
+    x+=joystick.x;
+
+    z+=joystick.y;
+
+
+    const length =
+        Math.hypot(
+            x,
+            z
         );
+
+
+    if(
+        length>1
+    ){
+
+        x/=length;
+
+        z/=length;
+
     }
-);
 
-addInteractable(
-    "CHOCOLATE",
-    new THREE.Vector3(25,.5,28),
-    "chocolate",
-    ()=>{
-        GAME.inventory.chocolate++;
 
-        showDialogue(
-            "Her",
-            "You remembered chocolate. I knew I liked you."
-        );
+    return {
+        x,
+        z
+    };
+
+}
+
+
+/* ============================================================
+   JUMP
+============================================================ */
+
+function jump(){
+
+    if(
+        S.mode==="city" &&
+        playerState.grounded
+    ){
+
+        playerState.velocityY =
+            CFG.jump;
+
+        playerState.grounded=
+            false;
+
     }
-);
 
-addInteractable(
-    "BIRTHDAY GIFT",
-    new THREE.Vector3(-25,.5,-5),
-    "gift",
-    ()=>{
-        GAME.inventory.gift++;
+}
 
-        showDialogue(
-            "Her",
-            "Wait... that's for me?"
-        );
-    }
-);
 
-addInteractable(
-    "LOVE LETTER",
-    new THREE.Vector3(5,.5,-25),
-    "letter",
-    ()=>{
-        GAME.inventory.letter++;
+/* ============================================================
+   COLLISION
+============================================================ */
 
-        showDialogue(
-            "Her",
-            "I think I need a minute after reading this..."
-        );
-    }
-);
+function resolveBuildingCollision(){
 
-for(let i=0;i<5;i++){
+    const position =
+        player.position;
 
-    addInteractable(
-        "STAR FRAGMENT",
-        new THREE.Vector3(
-            rand(-60,60),
-            .5,
-            rand(-60,60)
-        ),
-        "star",
-        ()=>{
-            GAME.inventory.star++;
 
-            showDialogue(
-                "Her",
-                "Another little piece of the universe."
+    for(
+        const collider
+        of colliders
+    ){
+
+        if(
+            collider===ground
+        )
+            continue;
+
+
+        const bounds =
+            new THREE.Box3()
+                .setFromObject(
+                    collider
+                );
+
+
+        const closestX =
+            clamp(
+                position.x,
+                bounds.min.x,
+                bounds.max.x
             );
+
+
+        const closestZ =
+            clamp(
+                position.z,
+                bounds.min.z,
+                bounds.max.z
+            );
+
+
+        const dx =
+            position.x -
+            closestX;
+
+
+        const dz =
+            position.z -
+            closestZ;
+
+
+        if(
+            dx*dx +
+            dz*dz <
+            .48*.48
+        ){
+
+            if(
+                Math.abs(dx) >
+                Math.abs(dz)
+            ){
+
+                position.x +=
+                    dx>=0
+                    ? .5
+                    : -.5;
+
+            }
+
+            else{
+
+                position.z +=
+                    dz>=0
+                    ? .5
+                    : -.5;
+
+            }
+
         }
-    );
+
+    }
+
+
+    position.x =
+        clamp(
+            position.x,
+            -77,
+            77
+        );
+
+    position.z =
+        clamp(
+            position.z,
+            -77,
+            77
+        );
+
 }
+
 
 /* ============================================================
-   NPC SYSTEM
+   PLAYER PHYSICS
 ============================================================ */
 
-const npcs=[];
+function updatePlayer(
+    dt
+){
 
-function createNPC(i){
+    if(
+        S.mode!=="city"
+    )
+        return;
 
-    const npc=createCharacter(
-        new THREE.Color().setHSL(
-            Math.random(),
-            .5,
-            .45
-        ),
-        0xc98f70,
-        0x211a20
+
+    const movement =
+        movementInput();
+
+
+    const moving =
+        Math.hypot(
+            movement.x,
+            movement.z
+        )>.05;
+
+
+    playerState.moving=
+        moving;
+
+
+    const speed =
+        keys.shift ||
+        runHeld
+        ? CFG.run
+        : CFG.walk;
+
+
+    const forward =
+        new THREE.Vector3(
+
+            Math.sin(yaw),
+            0,
+            Math.cos(yaw)
+
+        );
+
+
+    const right =
+        new THREE.Vector3(
+
+            Math.cos(yaw),
+            0,
+            -Math.sin(yaw)
+
+        );
+
+
+    const direction =
+        new THREE.Vector3();
+
+
+    direction.addScaledVector(
+        right,
+        movement.x
     );
 
-    npc.scale.setScalar(
-        rand(.8,1)
+
+    direction.addScaledVector(
+        forward,
+        movement.z
     );
 
-    npc.position.set(
-        rand(-65,65),
-        0,
-        rand(-65,65)
+
+    if(
+        direction.lengthSq()>0
+    ){
+
+        direction.normalize();
+
+
+        player.position
+            .addScaledVector(
+                direction,
+                speed*dt
+            );
+
+
+        player.rotation.y =
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+
+    }
+
+
+    /* Gravity */
+
+    playerState.velocityY +=
+        CFG.gravity*dt;
+
+
+    player.position.y +=
+        playerState.velocityY*dt;
+
+
+    /* Ground */
+
+    if(
+        player.position.y<=0
+    ){
+
+        player.position.y=0;
+
+        playerState.velocityY=0;
+
+        playerState.grounded=true;
+
+    }
+
+
+    resolveBuildingCollision();
+
+
+    animateCharacter(
+        player,
+        moving,
+        S.time
     );
 
-    cityGroup.add(npc);
-
-    npcs.push({
-        object:npc,
-        angle:Math.random()*Math.PI*2,
-        radius:rand(5,20),
-        speed:rand(.1,.5),
-        origin:npc.position.clone()
-    });
 }
 
-for(let i=0;i<CONFIG.npcCount;i++)
-    createNPC(i);
 
-function updateNPCs(dt){
+/* ============================================================
+   GIRLFRIEND AI
+============================================================ */
 
-    for(const npc of npcs){
+function updateGirl(
+    dt
+){
 
-        npc.angle+=
+    if(
+        S.mode!=="city"
+    )
+        return;
+
+
+    const offset =
+        new THREE.Vector3(
+
+            S.holding
+            ?1.5
+            :2,
+
+            0,
+
+            S.holding
+            ?.1
+            :2
+
+        );
+
+
+    offset.applyAxisAngle(
+
+        new THREE.Vector3(
+            0,
+            1,
+            0
+        ),
+
+        player.rotation.y
+
+    );
+
+
+    const target =
+        player.position
+            .clone()
+            .add(offset);
+
+
+    const direction =
+        target
+            .clone()
+            .sub(
+                girl.position
+            );
+
+
+    const distanceToTarget =
+        direction.length();
+
+
+    if(
+        distanceToTarget>.35
+    ){
+
+        direction.normalize();
+
+
+        girl.position
+            .addScaledVector(
+
+                direction,
+
+                Math.min(
+
+                    (
+                        S.holding
+                        ? CFG.walk
+                        : CFG.walk*.8
+                    )*dt,
+
+                    distanceToTarget
+
+                )
+
+            );
+
+
+        girl.rotation.y =
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+
+    }
+
+
+    girl.position.y=0;
+
+
+    animateCharacter(
+        girl,
+        distanceToTarget>.45,
+        S.time
+    );
+
+}
+
+
+/* ============================================================
+   NPC AI
+============================================================ */
+
+function updateNPC(
+    dt
+){
+
+    for(
+        const npc
+        of npcs
+    ){
+
+        npc.angle +=
             npc.speed*dt;
 
-        npc.object.position.x=
-            npc.origin.x+
-            Math.cos(npc.angle)*
+
+        npc.object.position.x =
+            npc.origin.x +
+            Math.cos(
+                npc.angle
+            )*
             npc.radius;
 
-        npc.object.position.z=
-            npc.origin.z+
-            Math.sin(npc.angle)*
+
+        npc.object.position.z =
+            npc.origin.z +
+            Math.sin(
+                npc.angle
+            )*
             npc.radius;
 
-        npc.object.rotation.y=
+
+        npc.object.rotation.y =
             -npc.angle;
+
 
         animateCharacter(
             npc.object,
             true,
-            GAME.time
+            S.time
         );
+
     }
+
 }
+
 
 /* ============================================================
    VEHICLES
 ============================================================ */
 
-const vehicles=[];
+function updateVehicles(
+    dt
+){
 
-function createVehicle(){
+    for(
+        const vehicle
+        of vehicles
+    ){
 
-    const group=new THREE.Group();
+        vehicle.object
+            .position.x +=
+                vehicle.speed *
+                vehicle.direction *
+                dt;
 
-    const body=new THREE.Mesh(
-        new THREE.BoxGeometry(
-            2,
-            .8,
-            3.2
-        ),
-        makeMaterial(
-            Math.random()>.5
-                ?0xffa62e
-                :0x2a8cff
-        )
-    );
-
-    body.position.y=.65;
-
-    group.add(body);
-
-    const cabin=new THREE.Mesh(
-        new THREE.BoxGeometry(
-            1.7,
-            .7,
-            1.5
-        ),
-        makeMaterial(0x22242c)
-    );
-
-    cabin.position.y=1.3;
-
-    group.add(cabin);
-
-    group.position.set(
-        rand(-70,70),
-        0,
-        Math.random()>.5
-            ?-5
-            :5
-    );
-
-    cityGroup.add(group);
-
-    vehicles.push({
-        object:group,
-        speed:rand(2,5),
-        direction:Math.random()>.5?1:-1
-    });
-}
-
-for(let i=0;i<CONFIG.vehicleCount;i++)
-    createVehicle();
-
-function updateVehicles(dt){
-
-    for(const vehicle of vehicles){
-
-        vehicle.object.position.x+=
-            vehicle.speed*
-            vehicle.direction*
-            dt;
 
         if(
-            vehicle.object.position.x>80
+            vehicle.object
+                .position.x>82
         )
-            vehicle.object.position.x=-80;
+            vehicle.object.position.x=-82;
+
 
         if(
-            vehicle.object.position.x<-80
+            vehicle.object
+                .position.x<-82
         )
-            vehicle.object.position.x=80;
+            vehicle.object.position.x=82;
 
-        vehicle.object.rotation.y=
+
+        vehicle.object.rotation.y =
             vehicle.direction>0
-            ?Math.PI/2
-            :-Math.PI/2;
+            ? Math.PI/2
+            : -Math.PI/2;
+
     }
+
 }
+
 
 /* ============================================================
    INTERACTION
@@ -2857,202 +4437,446 @@ function updateVehicles(dt){
 
 function interact(){
 
-    if(GAME.dialogue)
+    if(
+        S.dialogue
+    )
         return;
 
+
     let closest=null;
-    let closestDistance=3;
 
-    for(const item of interactables){
+    let bestDistance=3.2;
 
-        const d=
-            distance(
+
+    for(
+        const item
+        of interactables
+    ){
+
+        if(
+            !item.mesh.visible
+        )
+            continue;
+
+
+        const currentDistance =
+            dist(
                 player.position,
                 item.position
             );
 
-        if(d<closestDistance){
+
+        if(
+            currentDistance<
+            bestDistance
+        ){
 
             closest=item;
-            closestDistance=d;
+
+            bestDistance=
+                currentDistance;
+
         }
+
     }
 
-    if(closest){
+
+    if(
+        closest
+    ){
 
         closest.action();
 
-        closest.marker.visible=false;
+        closest.mesh.visible=false;
 
-        const index=
-            interactables.indexOf(
-                closest
-            );
+        closest.text.visible=false;
 
-        interactables.splice(
-            index,
-            1
-        );
+        updateInventory();
 
-        updateInventoryUI();
         updateQuest();
+
+        return;
+
     }
 
+
+    /* Cafe */
+
     if(
-        distance(
+        dist(
             player.position,
             cafe.position
-        )<12
+        )<13
     ){
 
-        GAME.completed.cafe=true;
+        S.done.cafe=true;
 
-        showDialogue(
+        say(
             "Her",
-            "This place is perfect. Two drinks, one table, and absolutely no reason to leave."
+            "This cafe is perfect. Two drinks, one table, and absolutely no reason to leave."
         );
 
         updateQuest();
+
+        return;
+
     }
 
+
+    /* Rajwada */
+
     if(
-        distance(
+        dist(
             player.position,
             rajwada.position
         )<18
     ){
 
-        GAME.completed.rajwada=true;
+        S.done.rajwada=true;
 
         cinematic(
             "INDORE",
-            "Rajwada • A little piece of history in our little universe."
+            "Rajwada — a little piece of history in our little universe."
         );
 
         updateQuest();
+
+        return;
+
     }
 
+
+    /* Golghar */
+
     if(
-        distance(
+        dist(
             player.position,
             golghar.position
         )<18
     ){
 
-        GAME.completed.golghar=true;
+        S.done.golghar=true;
 
         cinematic(
             "PATNA",
-            "Golghar • Now let's find somewhere quiet to watch the sky."
+            "Golghar — now let us find somewhere quiet to watch the sky."
         );
 
         updateQuest();
+
+        return;
+
     }
+
 }
+
 
 /* ============================================================
-   UI
+   HAND HOLD
 ============================================================ */
 
-function updateInventoryUI(){
+function toggleHold(){
 
-    document.getElementById(
-        "roseCount"
-    ).textContent=
-        GAME.inventory.rose;
+    if(
+        dist(
+            player.position,
+            girl.position
+        )<3
+    ){
 
-    document.getElementById(
-        "chocoCount"
-    ).textContent=
-        GAME.inventory.chocolate;
+        S.holding=
+            !S.holding;
 
-    document.getElementById(
-        "giftCount"
-    ).textContent=
-        GAME.inventory.gift;
 
-    document.getElementById(
-        "letterCount"
-    ).textContent=
-        GAME.inventory.letter;
+        say(
+            "Her",
 
-    document.getElementById(
-        "starCount"
-    ).textContent=
-        GAME.inventory.star;
-}
+            S.holding
 
-function toggleInventory(){
+            ? "Come on. Let’s see what this little universe has for us."
 
-    const inv=
-        document.getElementById(
-            "inventory"
+            : "Okay… but do not wander too far."
+
         );
 
-    inv.style.display=
-        inv.style.display==="block"
-        ?"none"
-        :"block";
-}
-
-function toggleDay(){
-
-    GAME.day=!GAME.day;
-
-    if(GAME.day){
-
-        scene.background.set(
-            0x87bce8
-        );
-
-        ambient.intensity=2;
-        sun.intensity=3;
-        moon.intensity=.1;
-
-    }else{
-
-        scene.background.set(
-            0x02030b
-        );
-
-        ambient.intensity=.7;
-        sun.intensity=.2;
-        moon.intensity=1.5;
     }
+
 }
 
-function showDialogue(
+
+/* ============================================================
+   DIALOGUE
+============================================================ */
+
+function say(
     name,
     text
 ){
 
-    GAME.dialogue=true;
+    S.dialogue=true;
 
-    document.getElementById(
-        "dialogueName"
-    ).textContent=name;
 
-    document.getElementById(
-        "dialogueText"
-    ).textContent=text;
+    $("dialogueName")
+        .textContent=
+            name;
 
-    document.getElementById(
-        "dialogue"
-    ).style.display="block";
+
+    $("dialogueText")
+        .textContent=
+            text;
+
+
+    $("dialogue")
+        .classList
+        .remove(
+            "hidden"
+        );
+
 }
 
-document
-    .getElementById("dialogueNext")
-    .addEventListener(
-        "click",
-        ()=>{
-            GAME.dialogue=false;
 
-            document.getElementById(
-                "dialogue"
-            ).style.display="none";
-        }
+$("dialogueNext").onclick =
+    ()=>{
+
+        S.dialogue=false;
+
+        $("dialogue")
+            .classList
+            .add(
+                "hidden"
+            );
+
+    };
+
+
+/* ============================================================
+   INVENTORY
+============================================================ */
+
+function updateInventory(){
+
+    $("rose").textContent=
+        S.inv.rose;
+
+    $("chocolate").textContent=
+        S.inv.chocolate;
+
+    $("gift").textContent=
+        S.inv.gift;
+
+    $("letter").textContent=
+        S.inv.letter;
+
+    $("star").textContent=
+        S.inv.star;
+
+}
+
+
+function toggleInventory(){
+
+    $("inventory")
+        .classList
+        .toggle(
+            "hidden"
+        );
+
+    updateInventory();
+
+}
+
+
+/* ============================================================
+   MODE SWITCHING
+============================================================ */
+
+function setMode(
+    mode
+){
+
+    S.mode=mode;
+
+
+    city.visible =
+        mode==="city";
+
+
+    galaxy.visible =
+        mode==="galaxy";
+
+
+    stars.visible =
+        mode==="galaxy";
+
+
+    solar.visible =
+        mode==="galaxy";
+
+
+    spaceFX.visible =
+        mode==="galaxy";
+
+
+    player.visible =
+        mode==="city";
+
+
+    girl.visible =
+        mode==="city";
+
+
+    if(
+        mode==="galaxy"
+    ){
+
+        camera.position.set(
+            0,
+            28,
+            90
+        );
+
+
+        camera.lookAt(
+            0,
+            0,
+            0
+        );
+
+
+        $("location")
+            .firstChild
+            .textContent=
+                "MILKY WAY";
+
+
+        $("locationSub")
+            .textContent=
+                "Galaxy / Solar System / Stars";
+
+    }
+
+    else{
+
+        $("location")
+            .firstChild
+            .textContent=
+                S.city.toUpperCase();
+
+
+        $("locationSub")
+            .textContent=
+
+                S.city==="indore"
+
+                ? "Madhya Pradesh • India"
+
+                : "Bihar • India";
+
+    }
+
+}
+
+
+/* ============================================================
+   CITY SWITCH
+============================================================ */
+
+function switchCity(
+    name
+){
+
+    S.city=name;
+
+
+    player.position.set(
+        0,
+        0,
+        12
     );
+
+
+    girl.position.set(
+        1.7,
+        0,
+        12
+    );
+
+
+    yaw=0;
+
+
+    setMode(
+        "city"
+    );
+
+
+    cinematic(
+
+        name==="indore"
+        ? "INDORE"
+        : "PATNA",
+
+        name==="indore"
+
+        ? "Welcome back to Indore."
+
+        : "Welcome to Patna."
+
+    );
+
+}
+
+
+/* ============================================================
+   CAMERA
+============================================================ */
+
+function updateCamera(){
+
+    if(
+        S.mode==="galaxy"
+    )
+        return;
+
+
+    const target =
+        player.position
+            .clone();
+
+
+    target.y+=1.9;
+
+
+    const offset =
+        new THREE.Vector3(
+
+            Math.sin(yaw)*9,
+
+            4.8,
+
+            Math.cos(yaw)*9
+
+        );
+
+
+    const desired =
+        target
+            .clone()
+            .add(offset);
+
+
+    camera.position.lerp(
+        desired,
+        .09
+    );
+
+
+    camera.lookAt(
+        target
+    );
+
+}
+
 
 /* ============================================================
    CINEMATIC
@@ -3063,690 +4887,914 @@ function cinematic(
     text
 ){
 
-    const c=
-        document.getElementById(
-            "cinematic"
-        );
+    $("cineTitle")
+        .textContent=
+            title;
 
-    document.getElementById(
-        "cinematicTitle"
-    ).textContent=title;
 
-    document.getElementById(
-        "cinematicText"
-    ).textContent=text;
+    $("cineText")
+        .textContent=
+            text;
 
-    c.style.display="flex";
 
-    requestAnimationFrame(()=>{
-        c.style.opacity=1;
-    });
+    $("cinematic")
+        .style
+        .display="flex";
 
-    setTimeout(()=>{
 
-        c.style.opacity=0;
+    requestAnimationFrame(
+        ()=>{
+            $("cinematic")
+                .style
+                .opacity=1;
+        }
+    );
 
-        setTimeout(()=>{
-            c.style.display="none";
-        },1000);
 
-    },2800);
-}
+    setTimeout(
+        ()=>{
 
-/* ============================================================
-   FINAL BIRTHDAY
-============================================================ */
+            $("cinematic")
+                .style
+                .opacity=0;
 
-function finalBirthday(){
 
-    GAME.completed.final=true;
-
-    setMode("galaxy");
-
-    const b=
-        document.getElementById(
-            "birthday"
-        );
-
-    b.style.display="flex";
-
-    playMusic();
-
-    createHeartParticles();
-
-}
-
-/* ============================================================
-   HEART PARTICLES
-============================================================ */
-
-function createHeartParticles(){
-
-    const geometry=
-        new THREE.BufferGeometry();
-
-    const count=600;
-
-    const positions=
-        new Float32Array(
-            count*3
-        );
-
-    for(let i=0;i<count;i++){
-
-        const t=
-            Math.random()*Math.PI*2;
-
-        const x=
-            16*Math.pow(
-                Math.sin(t),
-                3
+            setTimeout(
+                ()=>{
+                    $("cinematic")
+                        .style
+                        .display="none";
+                },
+                650
             );
 
-        const y=
-            13*Math.cos(t)
-            -5*Math.cos(2*t)
-            -2*Math.cos(3*t)
-            -Math.cos(4*t);
-
-        positions[i*3]=
-            x*.7+
-            rand(-3,3);
-
-        positions[i*3+1]=
-            y*.7+
-            rand(-3,3);
-
-        positions[i*3+2]=
-            rand(-20,20);
-    }
-
-    geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(
-            positions,
-            3
-        )
+        },
+        2200
     );
 
-    const material=
-        new THREE.PointsMaterial({
-            color:0xff4f9b,
-            size:.3,
-            transparent:true,
-            opacity:.8
-        });
-
-    const hearts=
-        new THREE.Points(
-            geometry,
-            material
-        );
-
-    hearts.position.set(
-        0,
-        30,
-        -80
-    );
-
-    scene.add(hearts);
 }
 
-/* ============================================================
-   MODE SWITCHING
-============================================================ */
-
-function setMode(mode){
-
-    GAME.mode=mode;
-
-    if(mode==="galaxy"){
-
-        cityGroup.visible=false;
-
-        galaxyGroup.visible=true;
-
-        solarGroup.visible=true;
-
-        player.visible=false;
-
-        companion.visible=false;
-
-        starGroup.visible=true;
-
-        camera.position.set(
-            0,
-            30,
-            90
-        );
-
-        camera.lookAt(0,0,0);
-
-        document.getElementById(
-            "locationText"
-        ).textContent=
-            "MILKY WAY • COSMIC VIEW";
-
-    }else{
-
-        cityGroup.visible=true;
-
-        galaxyGroup.visible=false;
-
-        solarGroup.visible=false;
-
-        player.visible=true;
-
-        companion.visible=true;
-
-        starGroup.visible=false;
-
-        document.getElementById(
-            "locationText"
-        ).textContent=
-            GAME.city==="indore"
-            ?"INDORE • MADHYA PRADESH"
-            :"PATNA • BIHAR";
-
-        camera.position.set(
-            player.position.x,
-            5,
-            player.position.z+9
-        );
-    }
-}
 
 /* ============================================================
-   GALAXY ANIMATION
+   DAY / NIGHT
 ============================================================ */
 
-function updateGalaxy(dt){
+function toggleDay(){
 
-    galaxyGroup.rotation.y+=
-        dt*.015;
+    S.day=
+        !S.day;
 
-    blackHole.rotation.y+=
-        dt*.4;
 
-    solarGroup.rotation.y+=
-        dt*.05;
-
-    for(
-        const child
-        of solarGroup.children
+    if(
+        S.day
     ){
 
-        if(
-            child.userData &&
-            child.userData.orbit
-        ){
-
-            const o=
-                child.userData.orbit;
-
-            o.angle+=
-                o.speed*dt*.1;
-
-            child.position.x=
-                Math.cos(o.angle)*
-                o.radius;
-
-            child.position.z=
-                Math.sin(o.angle)*
-                o.radius;
-        }
-    }
-}
-
-/* ============================================================
-   METEOR SHOWER
-============================================================ */
-
-const meteors=[];
-
-function createMeteor(){
-
-    const meteor=new THREE.Mesh(
-        new THREE.SphereGeometry(
-            rand(.08,.25),
-            6,
-            6
-        ),
-        new THREE.MeshBasicMaterial({
-            color:0xffffff
-        })
-    );
-
-    meteor.position.set(
-        rand(-500,500),
-        rand(50,300),
-        rand(-500,500)
-    );
-
-    scene.add(meteor);
-
-    meteors.push({
-        object:meteor,
-        velocity:new THREE.Vector3(
-            rand(-20,20),
-            -rand(20,50),
-            rand(-20,20)
-        )
-    });
-}
-
-for(let i=0;i<40;i++)
-    createMeteor();
-
-function updateMeteors(dt){
-
-    for(const meteor of meteors){
-
-        meteor.object.position.addScaledVector(
-            meteor.velocity,
-            dt
-        );
-
-        if(
-            meteor.object.position.y<0
-        ){
-
-            meteor.object.position.set(
-                rand(-500,500),
-                rand(100,300),
-                rand(-500,500)
+        scene.background
+            .set(
+                0x7faed5
             );
-        }
+
+        hemi.intensity=2;
+
+        sun.intensity=2.8;
+
+        moon.intensity=.25;
+
     }
+
+    else{
+
+        scene.background
+            .set(
+                0x02030b
+            );
+
+        hemi.intensity=.65;
+
+        sun.intensity=.2;
+
+        moon.intensity=1.4;
+
+    }
+
 }
 
-/* ============================================================
-   MINIMAP
-============================================================ */
-
-const mapCanvas=
-    document.getElementById(
-        "mapCanvas"
-    );
-
-const mapCtx=
-    mapCanvas.getContext("2d");
-
-function updateMinimap(){
-
-    mapCtx.clearRect(
-        0,
-        0,
-        180,
-        180
-    );
-
-    mapCtx.fillStyle="#071324";
-
-    mapCtx.fillRect(
-        0,
-        0,
-        180,
-        180
-    );
-
-    mapCtx.strokeStyle="#2d4260";
-
-    mapCtx.lineWidth=2;
-
-    mapCtx.beginPath();
-
-    mapCtx.moveTo(90,0);
-    mapCtx.lineTo(90,180);
-
-    mapCtx.moveTo(0,90);
-    mapCtx.lineTo(180,90);
-
-    mapCtx.stroke();
-
-    const px=
-        90+
-        player.position.x;
-
-    const pz=
-        90+
-        player.position.z;
-
-    mapCtx.fillStyle="#ff5c9f";
-
-    mapCtx.beginPath();
-
-    mapCtx.arc(
-        clamp(px,5,175),
-        clamp(pz,5,175),
-        5,
-        0,
-        Math.PI*2
-    );
-
-    mapCtx.fill();
-
-    mapCtx.fillStyle="#fff";
-
-    mapCtx.font="10px Arial";
-
-    mapCtx.fillText(
-        "YOU",
-        clamp(px,5,175)+6,
-        clamp(pz,5,175)
-    );
-}
 
 /* ============================================================
    MUSIC
 ============================================================ */
 
 let audioContext=null;
+
 let musicGain=null;
+
 let musicTimer=null;
 
-function playMusic(){
 
-    if(!GAME.music)
+function music(){
+
+    if(
+        !S.music ||
+        audioContext
+    )
         return;
 
-    if(audioContext)
+
+    const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+
+    if(
+        !AudioContext
+    )
         return;
 
-    audioContext=
-        new (
-            window.AudioContext ||
-            window.webkitAudioContext
-        )();
 
-    musicGain=
-        audioContext.createGain();
+    audioContext =
+        new AudioContext();
 
-    musicGain.gain.value=.04;
+
+    musicGain =
+        audioContext
+            .createGain();
+
+
+    musicGain.gain.value=
+        .035;
+
 
     musicGain.connect(
         audioContext.destination
     );
 
+
     const notes=[
+
         261.63,
+
         329.63,
+
         392,
+
         523.25,
+
         392,
-        329.63,
+
+        349.23,
+
         293.66,
-        349.23
+
+        392
+
     ];
+
 
     let index=0;
 
-    musicTimer=
-        setInterval(()=>{
 
-            if(!GAME.music)
-                return;
+    musicTimer =
+        setInterval(
+            ()=>{
 
-            const osc=
-                audioContext.createOscillator();
+                if(
+                    !S.music
+                )
+                    return;
 
-            const gain=
-                audioContext.createGain();
 
-            osc.type="sine";
+                const oscillator =
+                    audioContext
+                        .createOscillator();
 
-            osc.frequency.value=
-                notes[index%notes.length];
 
-            gain.gain.setValueAtTime(
-                0,
-                audioContext.currentTime
-            );
+                const gain =
+                    audioContext
+                        .createGain();
 
-            gain.gain.linearRampToValueAtTime(
-                .25,
-                audioContext.currentTime+.05
-            );
 
-            gain.gain.exponentialRampToValueAtTime(
-                .001,
-                audioContext.currentTime+1.5
-            );
+                oscillator.type=
+                    "sine";
 
-            osc.connect(gain);
-            gain.connect(musicGain);
 
-            osc.start();
+                oscillator.frequency.value=
+                    notes[
+                        index++
+                        %
+                        notes.length
+                    ];
 
-            osc.stop(
-                audioContext.currentTime+1.6
-            );
 
-            index++;
+                gain.gain
+                    .setValueAtTime(
+                        .0001,
+                        audioContext
+                            .currentTime
+                    );
 
-        },750);
-}
 
-document
-    .getElementById("musicBtn")
-    .addEventListener(
-        "click",
-        ()=>{
-            GAME.music=!GAME.music;
+                gain.gain
+                    .exponentialRampToValueAtTime(
+                        .18,
+                        audioContext
+                            .currentTime+.04
+                    );
 
-            if(GAME.music)
-                playMusic();
-        }
-    );
 
-/* ============================================================
-   CAMERA
-============================================================ */
+                gain.gain
+                    .exponentialRampToValueAtTime(
+                        .0001,
+                        audioContext
+                            .currentTime+1.2
+                    );
 
-function updateCamera(){
 
-    if(GAME.mode==="galaxy")
-        return;
+                oscillator.connect(
+                    gain
+                );
 
-    const distanceBehind=
-        GAME.handHolding
-        ?8
-        :10;
 
-    const target=
-        new THREE.Vector3(
-            player.position.x,
-            player.position.y+2,
-            player.position.z
+                gain.connect(
+                    musicGain
+                );
+
+
+                oscillator.start();
+
+
+                oscillator.stop(
+                    audioContext
+                        .currentTime+1.3
+                );
+
+
+            },
+            700
         );
 
-    const offset=
-        new THREE.Vector3(
-            Math.sin(cameraYaw)*
-            distanceBehind,
-
-            5,
-
-            Math.cos(cameraYaw)*
-            distanceBehind
-        );
-
-    const desired=
-        target.clone()
-        .add(offset);
-
-    camera.position.lerp(
-        desired,
-        .08
-    );
-
-    camera.lookAt(target);
 }
 
+
 /* ============================================================
-   NEARBY UI
+   PROMPT
 ============================================================ */
 
-function updateInteractionUI(){
+function updatePrompt(){
 
-    let closest=null;
-    let dBest=3;
+    let nearby=false;
 
-    for(const item of interactables){
 
-        const d=
-            distance(
+    for(
+        const item
+        of interactables
+    ){
+
+        if(
+            item.mesh.visible &&
+            dist(
                 player.position,
                 item.position
-            );
+            )<3.2
+        ){
 
-        if(d<dBest){
+            nearby=true;
 
-            closest=item;
-            dBest=d;
+            break;
+
         }
+
     }
 
-    const interaction=
-        document.getElementById(
-            "interaction"
+
+    if(
+        dist(
+            player.position,
+            cafe.position
+        )<13
+    )
+        nearby=true;
+
+
+    if(
+        dist(
+            player.position,
+            rajwada.position
+        )<18
+    )
+        nearby=true;
+
+
+    if(
+        dist(
+            player.position,
+            golghar.position
+        )<18
+    )
+        nearby=true;
+
+
+    $("prompt")
+        .style
+        .display=
+            nearby
+            ?"block"
+            :"none";
+
+}
+
+
+/* ============================================================
+   MINIMAP
+============================================================ */
+
+function updateMap(){
+
+    const canvas =
+        $("mapCanvas");
+
+
+    const ctx =
+        canvas.getContext(
+            "2d"
         );
 
-    if(closest){
 
-        interaction.style.display=
-            "block";
+    ctx.clearRect(
+        0,
+        0,
+        180,
+        180
+    );
 
-    }else{
 
-        interaction.style.display=
-            "none";
-    }
+    ctx.fillStyle=
+        "#071324";
+
+
+    ctx.fillRect(
+        0,
+        0,
+        180,
+        180
+    );
+
+
+    ctx.strokeStyle=
+        "#2b4260";
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        90,
+        0
+    );
+
+
+    ctx.lineTo(
+        90,
+        180
+    );
+
+
+    ctx.moveTo(
+        0,
+        90
+    );
+
+
+    ctx.lineTo(
+        180,
+        90
+    );
+
+
+    ctx.stroke();
+
+
+    const x =
+        clamp(
+            90+
+            player.position.x,
+            4,
+            176
+        );
+
+
+    const z =
+        clamp(
+            90+
+            player.position.z,
+            4,
+            176
+        );
+
+
+    ctx.fillStyle=
+        "#ff62ad";
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        x,
+        z,
+        5,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.fill();
+
 }
+
+
+/* ============================================================
+   FINAL
+============================================================ */
+
+function finishGame(){
+
+    if(
+        S.done.final
+    )
+        return;
+
+
+    S.done.final=true;
+
+
+    setMode(
+        "galaxy"
+    );
+
+
+    $("ending")
+        .classList
+        .remove(
+            "hidden"
+        );
+
+}
+
+
+$("closeEnding").onclick =
+    ()=>{
+
+        $("ending")
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        setMode(
+            "city"
+        );
+
+    };
+
+
+/* ============================================================
+   MENU
+============================================================ */
+
+$("menuBtn").onclick =
+    ()=>{
+        $("menu")
+            .classList
+            .toggle(
+                "hidden"
+            );
+    };
+
+
+$("invBtn").onclick =
+    toggleInventory;
+
+
+$("dayBtn").onclick =
+    toggleDay;
+
+
+$("galaxyBtn").onclick =
+    ()=>{
+
+        setMode(
+            "galaxy"
+        );
+
+        $("menu")
+            .classList
+            .add(
+                "hidden"
+            );
+
+    };
+
+
+$("indoreBtn").onclick =
+    ()=>{
+
+        switchCity(
+            "indore"
+        );
+
+        $("menu")
+            .classList
+            .add(
+                "hidden"
+            );
+
+    };
+
+
+$("patnaBtn").onclick =
+    ()=>{
+
+        switchCity(
+            "patna"
+        );
+
+        $("menu")
+            .classList
+            .add(
+                "hidden"
+            );
+
+    };
+
+
+$("musicBtn").onclick =
+    ()=>{
+
+        S.music=
+            !S.music;
+
+
+        $("musicBtn")
+            .textContent=
+                "Music: "+
+                (
+                    S.music
+                    ?"ON"
+                    :"OFF"
+                );
+
+
+        if(
+            S.music
+        )
+            music();
+
+    };
+
+
+$("fullBtn").onclick =
+    ()=>{
+
+        if(
+            document.documentElement
+                .requestFullscreen
+        ){
+
+            document.documentElement
+                .requestFullscreen();
+
+        }
+
+    };
+
+
+/* ============================================================
+   MOBILE BUTTONS
+============================================================ */
+
+$("jump").addEventListener(
+    "pointerdown",
+    jump
+);
+
+
+$("run").addEventListener(
+    "pointerdown",
+    ()=>{
+        runHeld=true;
+    }
+);
+
+
+$("run").addEventListener(
+    "pointerup",
+    ()=>{
+        runHeld=false;
+    }
+);
+
+
+$("run").addEventListener(
+    "pointercancel",
+    ()=>{
+        runHeld=false;
+    }
+);
+
+
+$("run").addEventListener(
+    "pointerleave",
+    ()=>{
+        runHeld=false;
+    }
+);
+
+
+$("interact").addEventListener(
+    "pointerdown",
+    interact
+);
+
+
+$("hold").addEventListener(
+    "pointerdown",
+    toggleHold
+);
+
 
 /* ============================================================
    RESIZE
 ============================================================ */
 
-window.addEventListener(
+addEventListener(
     "resize",
     ()=>{
-        camera.aspect=
-            innerWidth/innerHeight;
+
+        camera.aspect =
+            innerWidth /
+            innerHeight;
+
 
         camera.updateProjectionMatrix();
+
+
+        renderer.setPixelRatio(
+            Math.min(
+                devicePixelRatio,
+                1.5
+            )
+        );
+
 
         renderer.setSize(
             innerWidth,
             innerHeight
         );
+
     }
 );
 
+
 /* ============================================================
-   MAIN LOOP
+   GAME LOOP
 ============================================================ */
 
-const clock=new THREE.Clock();
+const clock =
+    new THREE.Clock();
 
-function animate(){
 
-    requestAnimationFrame(animate);
+function tick(){
 
-    const dt=
+    requestAnimationFrame(
+        tick
+    );
+
+
+    const dt =
         Math.min(
             clock.getDelta(),
             .05
         );
 
-    GAME.time+=dt;
+
+    S.time+=dt;
+
 
     updatePlayer(dt);
 
-    updateCompanion(dt);
+    updateGirl(dt);
 
-    updateNPCs(dt);
+    updateNPC(dt);
 
     updateVehicles(dt);
 
-    updateGalaxy(dt);
-
-    updateMeteors(dt);
-
     updateCamera();
 
-    updateInteractionUI();
+    updatePrompt();
 
-    updateMinimap();
+    updateMap();
 
-    updateQuest();
+
+    if(
+        S.mode==="galaxy"
+    ){
+
+        galaxy.rotation.y +=
+            dt*.012;
+
+
+        black.rotation.y +=
+            dt*.35;
+
+
+        solar.rotation.y +=
+            dt*.05;
+
+
+        planets.forEach(
+            planet=>{
+
+                planet.userData.a +=
+                    planet.userData.v *
+                    dt *
+                    .03;
+
+
+                planet.position.set(
+
+                    Math.cos(
+                        planet.userData.a
+                    ) *
+                    planet.userData.d,
+
+                    0,
+
+                    Math.sin(
+                        planet.userData.a
+                    ) *
+                    planet.userData.d
+
+                );
+
+            }
+        );
+
+
+        meteors.forEach(
+            meteor=>{
+
+                meteor.m
+                    .position
+                    .addScaledVector(
+                        meteor.v,
+                        dt
+                    );
+
+
+                if(
+                    meteor.m.position.y<0
+                ){
+
+                    meteor.m.position.set(
+
+                        rand(-500,500),
+
+                        rand(100,300),
+
+                        rand(-500,500)
+
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
 
     renderer.render(
         scene,
         camera
     );
+
 }
+
 
 /* ============================================================
    STARTUP
 ============================================================ */
 
-setMode("galaxy");
+setMode(
+    "city"
+);
 
-progress();
-progress();
-progress();
-progress();
 
-setTimeout(()=>{
+progress(20);
 
-    document.getElementById(
-        "loading"
-    ).style.opacity="0";
 
-    setTimeout(()=>{
+setTimeout(
+    ()=>{
 
-        document.getElementById(
-            "loading"
-        ).style.display="none";
+        progress(20);
 
-        document.getElementById(
-            "birthday"
-        ).style.display="flex";
+        $("loading")
+            .classList
+            .add(
+                "hidden"
+            );
 
-    },1000);
 
-},800);
+        $("welcome")
+            .classList
+            .remove(
+                "hidden"
+            );
+
+    },
+    500
+);
+
 
 /* ============================================================
    START GAME
 ============================================================ */
 
-document
-    .getElementById("startButton")
-    .addEventListener(
-        "click",
-        ()=>{
-            document.getElementById(
-                "birthday"
-            ).style.display="none";
+$("start").onclick =
+    ()=>{
 
-            GAME.running=true;
+        $("welcome")
+            .classList
+            .add(
+                "hidden"
+            );
 
-            playMusic();
 
-            setMode("city");
+        $("hud")
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        /*
+         Audio starts only after a user gesture.
+         This is required by Android Chrome autoplay policy.
+        */
+
+        music();
+
+
+        cinematic(
+            "WELCOME",
+            "Your date begins in our little universe."
+        );
+
+
+        updateQuest();
+
+    };
+
+
+/* ============================================================
+   METEOR SHOWER TRIGGER
+============================================================ */
+
+setInterval(
+    ()=>{
+
+        if(
+            S.inv.star>=3 &&
+            !S.done.meteor
+        ){
+
+            S.done.meteor=true;
+
 
             cinematic(
-                "WELCOME",
-                "Your date begins in our little universe."
+                "METEOR SHOWER",
+                "Make a wish together."
             );
-        }
-    );
 
-animate();
+
+            updateQuest();
+
+        }
+
+    },
+    1000
+);
+
+
+/* ============================================================
+   START RENDERING
+============================================================ */
+
+tick();
 
 </script>
 
 </body>
+
 </html>
