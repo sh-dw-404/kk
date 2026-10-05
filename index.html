@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070914" />
+  <meta name="description" content="A procedural 3D birthday journey from the Milky Way to India, Indore and Patna." />
+  <title>To My Darling — A Date Across the Universe</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene"></canvas>
+
+    <header class="hud topbar">
+      <div class="brand">
+        <div class="brand-kicker">A DATE ACROSS THE UNIVERSE</div>
+        <div class="brand-title">For <span id="darlingName">Darling</span></div>
+      </div>
+      <div class="top-actions">
+        <button id="soundBtn" class="glass-btn" type="button" aria-label="Toggle ambience">Sound: On</button>
+        <button id="factsBtn" class="glass-btn" type="button">Facts</button>
+      </div>
+    </header>
+
+    <aside class="hud side-panel">
+      <div class="panel-label">JOURNEY</div>
+      <div id="journeyList" class="journey-list"></div>
+    </aside>
+
+    <div id="zoneCard" class="hud zone-card">
+      <div class="zone-eyebrow" id="zoneEyebrow">GALAXY</div>
+      <div class="zone-title" id="zoneTitle">Somewhere in the Milky Way</div>
+      <div class="zone-copy" id="zoneCopy">
+        We begin roughly 26,000 light-years from the center of the Milky Way.
+      </div>
+    </div>
+
+    <div class="hud controls-card">
+      <div class="controls-title">Controls</div>
+      <div class="controls-row">
+        <span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span>
+        <span>move at street level</span>
+      </div>
+      <div class="controls-row"><span class="keycap">SPACE</span><span>pause / resume</span></div>
+      <div class="controls-row"><span class="keycap">1–5</span><span>jump to a layer</span></div>
+      <div class="controls-row"><span class="keycap">I</span><span>Indore</span><span class="keycap">P</span><span>Patna</span></div>
+    </div>
+
+    <div class="hud progress-wrap">
+      <div class="progress-top">
+        <span id="progressLabel">GALAXY</span>
+        <span id="progressNumber">01 / 05</span>
+      </div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+    </div>
+
+    <div id="interaction" class="hud interaction hidden"></div>
+
+    <div id="birthdayPanel" class="birthday-panel hidden">
+      <div class="birthday-orbit"></div>
+      <div class="birthday-content">
+        <div class="small-caps">THE FINAL STOP</div>
+        <h1>Happy Birthday, <span id="birthdayName">Darling</span>.</h1>
+        <p id="birthdayMessage">
+          Out of every star, every road, every city and every possible universe,
+          this is still the one where I would choose you.
+        </p>
+        <button id="restartBtn" class="primary-btn" type="button">Take the journey again</button>
+      </div>
+    </div>
+
+    <div id="factsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="factsTitle">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <div class="small-caps">RESEARCH NOTES</div>
+            <h2 id="factsTitle">Science and place data used in the world</h2>
+          </div>
+          <button id="closeFactsBtn" class="icon-btn" type="button" aria-label="Close">×</button>
+        </div>
+        <div id="factsBody" class="facts-body"></div>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="loading-inner">
+        <div class="loading-kicker">CALIBRATING THE DATE</div>
+        <div class="loading-title">Building your universe…</div>
+        <div class="loading-track"><div id="loadingBar"></div></div>
+        <div class="loading-note">Procedural 3D scene • no image assets required</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
