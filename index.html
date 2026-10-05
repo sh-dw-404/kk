@@ -1,527 +1,3750 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050612">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
-<title>For You — A Date Across the Universe</title>
-
-<link rel="stylesheet" href="./styles.css">
+<title>Our Little Universe — Virtual Birthday Date</title>
 
 <style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#02030b;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    touch-action:none;
+}
+
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+}
+
+#loading{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at center,#21114f 0%,#09071c 45%,#010207 100%);
+    transition:opacity 1s;
+}
+
+#loading h1{
+    font-size:clamp(28px,8vw,64px);
+    margin:0 0 10px;
+    text-align:center;
+    letter-spacing:2px;
+}
+
+#loading p{
+    opacity:.7;
+    text-align:center;
+}
+
+.loader{
+    width:220px;
+    height:5px;
+    border-radius:10px;
+    background:#ffffff18;
+    overflow:hidden;
+    margin-top:25px;
+}
+
+.loader div{
+    height:100%;
+    width:0;
+    background:linear-gradient(90deg,#ff65c7,#9f7cff,#65dfff);
+    transition:width .3s;
+}
+
+#hud{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:20;
+}
+
+#topbar{
+    position:absolute;
+    top:env(safe-area-inset-top,12px);
+    left:12px;
+    right:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.glass{
+    background:rgba(10,8,30,.58);
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 10px 40px rgba(0,0,0,.25);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-radius:16px;
+}
+
+#titleBox{
+    padding:10px 14px;
+    max-width:70%;
+}
+
+#titleBox b{
+    display:block;
+    font-size:14px;
+}
+
+#titleBox span{
+    display:block;
+    margin-top:3px;
+    opacity:.65;
+    font-size:11px;
+}
+
+#objective{
+    position:absolute;
+    top:85px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(92vw,420px);
+    padding:12px 16px;
+    text-align:center;
+}
+
+#objective .small{
+    font-size:10px;
+    opacity:.55;
+    text-transform:uppercase;
+    letter-spacing:2px;
+}
+
+#objectiveText{
+    margin-top:5px;
+    font-weight:bold;
+}
+
+#inventory{
+    position:absolute;
+    right:12px;
+    top:80px;
+    width:180px;
+    padding:12px;
+    display:none;
+    pointer-events:auto;
+}
+
+#inventory h3{
+    margin:0 0 8px;
+}
+
+.item{
+    display:flex;
+    justify-content:space-between;
+    padding:5px 0;
+    font-size:12px;
+}
+
+#interaction{
+    position:absolute;
+    left:50%;
+    bottom:125px;
+    transform:translateX(-50%);
+    display:none;
+    pointer-events:none;
+}
+
+#interaction button{
+    border:0;
+    padding:12px 20px;
+    color:white;
+    background:linear-gradient(135deg,#ff4fa3,#8d5cff);
+    border-radius:30px;
+    font-weight:bold;
+}
+
+#dialogue{
+    position:absolute;
+    left:50%;
+    bottom:25px;
+    transform:translateX(-50%);
+    width:min(92vw,650px);
+    padding:18px;
+    display:none;
+    pointer-events:auto;
+}
+
+#dialogueName{
+    color:#ff83c8;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+#dialogueText{
+    line-height:1.5;
+    font-size:14px;
+}
+
+#dialogueNext{
+    float:right;
+    margin-top:10px;
+    border:0;
+    padding:8px 14px;
+    border-radius:20px;
+    background:white;
+    color:#111;
+}
+
+#minimap{
+    position:absolute;
+    right:15px;
+    bottom:15px;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    overflow:hidden;
+    border:2px solid rgba(255,255,255,.25);
+    background:#081329;
+}
+
+#mapCanvas{
+    width:100%;
+    height:100%;
+}
+
+#controls{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+#joystick{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    width:125px;
+    height:125px;
+    border-radius:50%;
+    background:#ffffff12;
+    border:1px solid #ffffff22;
+    pointer-events:auto;
+}
+
+#stick{
+    position:absolute;
+    left:37px;
+    top:37px;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    background:#ffffff33;
+    border:1px solid #ffffff44;
+}
+
+.action{
+    position:absolute;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    border:1px solid #ffffff33;
+    color:white;
+    font-weight:bold;
+    background:#ffffff18;
+    pointer-events:auto;
+    backdrop-filter:blur(8px);
+}
+
+#jumpBtn{
+    right:25px;
+    bottom:105px;
+}
+
+#runBtn{
+    right:90px;
+    bottom:35px;
+}
+
+#interactBtn{
+    right:20px;
+    bottom:35px;
+    background:linear-gradient(135deg,#ff4fa3aa,#825fffaa);
+}
+
+#holdBtn{
+    right:155px;
+    bottom:35px;
+}
+
+#menuBtn{
+    right:15px;
+    top:80px;
+    width:42px;
+    height:42px;
+}
+
+#menu{
+    position:absolute;
+    right:15px;
+    top:130px;
+    width:180px;
+    padding:10px;
+    display:none;
+    pointer-events:auto;
+}
+
+.menuButton{
+    width:100%;
+    border:0;
+    color:white;
+    background:#ffffff12;
+    border-radius:10px;
+    padding:10px;
+    margin:4px 0;
+}
+
 #cinematic{
-  position:fixed;
-  inset:0;
-  z-index:20;
-  pointer-events:none;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  background:radial-gradient(circle at center,transparent 15%,rgba(2,3,12,.3) 70%,rgba(0,0,0,.72));
-  opacity:1;
-  transition:opacity 1.2s;
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:#000;
+    opacity:0;
+    pointer-events:none;
 }
 
-.cinematic-inner{
-  width:min(680px,88vw);
-  text-shadow:0 4px 30px #000;
+#cinematic h1{
+    font-size:clamp(28px,8vw,80px);
+    text-align:center;
+    margin:10px;
 }
 
-.cinematic-kicker{
-  font-size:10px;
-  letter-spacing:.28em;
-  text-transform:uppercase;
-  color:#aeb5d1;
+#cinematic p{
+    font-size:16px;
+    opacity:.7;
 }
 
-.cinematic-title{
-  font:500 clamp(34px,7vw,72px)/.96 Georgia,serif;
-  margin:12px 0;
+#birthday{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:
+        radial-gradient(circle,#4c1768 0%,#10051e 55%,#010106 100%);
 }
 
-.cinematic-copy{
-  color:#c8cde0;
-  font-size:13px;
-  line-height:1.6;
+#birthdayBox{
+    width:min(90vw,700px);
+    padding:35px;
 }
 
-.skip{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  z-index:30;
-  pointer-events:auto;
+#birthdayBox h1{
+    font-size:clamp(36px,10vw,90px);
+    margin:0;
+    background:linear-gradient(90deg,#ff73c6,#fff,#8fdcff);
+    color:transparent;
+    background-clip:text;
+    -webkit-background-clip:text;
 }
 
-.story-dim{
-  position:fixed;
-  inset:0;
-  z-index:15;
-  pointer-events:none;
-  background:#000;
-  opacity:0;
-  transition:opacity 1.3s;
+#birthdayBox p{
+    line-height:1.7;
+    opacity:.8;
 }
 
-.final-letter{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:grid;
-  place-items:center;
-  background:
-    radial-gradient(circle at 50% 45%,#ff79bd25,transparent 30%),
-    rgba(2,3,12,.78);
-  backdrop-filter:blur(9px);
+#startButton{
+    border:0;
+    padding:14px 30px;
+    margin-top:20px;
+    border-radius:40px;
+    font-weight:bold;
+    color:white;
+    background:linear-gradient(90deg,#ff4fa3,#725cff);
 }
 
-.final-card{
-  width:min(720px,calc(100vw - 30px));
-  padding:38px;
-  border:1px solid #fff2;
-  border-radius:26px;
-  background:#070a19d9;
-  text-align:center;
-  box-shadow:0 35px 120px #0009;
-}
+@media(max-width:700px){
+    #objective{
+        top:75px;
+    }
 
-.final-card h1{
-  font:500 clamp(40px,8vw,78px)/.94 Georgia,serif;
-  margin:12px 0 20px;
-}
+    #minimap{
+        width:90px;
+        height:90px;
+    }
 
-.final-card p{
-  max-width:570px;
-  margin:auto;
-  color:#d0d5e5;
-  font:15px/1.75 Georgia,serif;
-}
+    #interaction{
+        bottom:155px;
+    }
 
-.final-card button{
-  margin-top:25px;
-  border:1px solid #fff2;
-  background:linear-gradient(90deg,#79ddff22,#ff79bd25);
-  padding:12px 18px;
-  border-radius:12px;
-  color:white;
-  cursor:pointer;
-}
-
-.hiddenx{
-  display:none!important;
+    #inventory{
+        width:155px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div id="story-dim" class="story-dim"></div>
-
-<div id="cinematic">
-  <div class="cinematic-inner">
-    <div id="story-kicker" class="cinematic-kicker">
-      A DATE ACROSS THE UNIVERSE
-    </div>
-
-    <div id="story-title" class="cinematic-title">
-      Before we begin…
-    </div>
-
-    <div id="story-copy" class="cinematic-copy">
-      I wanted to take you somewhere bigger than a birthday card.
-    </div>
-  </div>
+<div id="loading">
+    <h1>Our Little Universe</h1>
+    <p>Building the galaxy for your virtual date...</p>
+    <div class="loader"><div id="loadbar"></div></div>
 </div>
 
-<button id="skip" class="glass-btn skip">
-  Enter the journey
-</button>
+<div id="hud">
 
-<div id="final-letter" class="final-letter hiddenx">
-  <div class="final-card">
-
-    <div class="small-caps">
-      THE FINAL STOP
+    <div id="topbar">
+        <div id="titleBox" class="glass">
+            <b>Our Little Universe</b>
+            <span id="locationText">THE MILKY WAY</span>
+        </div>
     </div>
 
-    <h1>
-      Happy Birthday,<br>
-      Darling.
-    </h1>
-
-    <p id="final-text">
-      If I could show you every beautiful thing in existence,
-      I would still save my favourite view for the end: you.
-    </p>
-
-    <button id="again">
-      Take the date again
-    </button>
-
-  </div>
-</div>
-
-<div id="loading" class="loading">
-  <div class="loading-inner">
-
-    <div class="loading-kicker">
-      CALIBRATING THE DATE
+    <div id="objective" class="glass">
+        <div class="small">Current Mission</div>
+        <div id="objectiveText">Explore the universe together.</div>
     </div>
 
-    <div class="loading-title">
-      Building your universe…
+    <div id="inventory" class="glass">
+        <h3>Inventory</h3>
+        <div class="item"><span>Rose</span><b id="roseCount">0</b></div>
+        <div class="item"><span>Chocolate</span><b id="chocoCount">0</b></div>
+        <div class="item"><span>Gift</span><b id="giftCount">0</b></div>
+        <div class="item"><span>Letter</span><b id="letterCount">0</b></div>
+        <div class="item"><span>Star Fragment</span><b id="starCount">0</b></div>
     </div>
 
-    <div class="loading-track">
-      <div id="loadingBar" class="loading-bar"></div>
+    <div id="interaction">
+        <button>INTERACT</button>
     </div>
 
-    <div class="loading-note">
-      Galaxy • planets • India • cities • your date
+    <div id="dialogue" class="glass">
+        <div id="dialogueName"></div>
+        <div id="dialogueText"></div>
+        <button id="dialogueNext">Continue</button>
     </div>
 
-  </div>
-</div>
-
-
-<div id="app">
-
-<canvas id="scene"></canvas>
-
-
-<header class="hud topbar">
-
-  <div class="brand">
-
-    <div class="brand-kicker">
-      A DATE ACROSS THE UNIVERSE
+    <div id="minimap">
+        <canvas id="mapCanvas" width="180" height="180"></canvas>
     </div>
 
-    <div class="brand-title">
-      For <span id="darlingName">Darling</span>
-    </div>
+    <div id="controls">
 
-  </div>
-
-
-  <div class="top-actions">
-
-    <button id="soundBtn" class="glass-btn">
-      Sound: On
-    </button>
-
-    <button id="factsBtn" class="glass-btn">
-      Facts
-    </button>
-
-  </div>
-
-</header>
-
-
-<aside class="hud side-panel">
-
-  <div class="panel-label">
-    JOURNEY
-  </div>
-
-  <div id="journeyList" class="journey-list"></div>
-
-</aside>
-
-
-<div id="zoneCard" class="hud zone-card">
-
-  <div class="zone-eyebrow" id="zoneEyebrow">
-    GALAXY
-  </div>
-
-  <div class="zone-title" id="zoneTitle">
-    Somewhere in the Milky Way
-  </div>
-
-  <div class="zone-copy" id="zoneCopy">
-    A journey that starts among the stars.
-  </div>
-
-</div>
-
-
-<div class="hud controls-card">
-
-  <div class="controls-title">
-    Your date
-  </div>
-
-  <div class="controls-row">
-    <span class="keycap">W</span>
-    <span class="keycap">A</span>
-    <span class="keycap">S</span>
-    <span class="keycap">D</span>
-    <span>walk together</span>
-  </div>
-
-  <div class="controls-row">
-    <span class="keycap">1–5</span>
-    <span>jump layer</span>
-  </div>
-
-  <div class="controls-row">
-    <span class="keycap">I</span>
-    <span>Indore</span>
-
-    <span class="keycap">P</span>
-    <span>Patna</span>
-  </div>
-
-</div>
-
-
-<div class="hud progress-wrap">
-
-  <div class="progress-top">
-
-    <span id="progressLabel">
-      GALAXY
-    </span>
-
-    <span id="progressNumber">
-      01 / 05
-    </span>
-
-  </div>
-
-  <div class="progress-track">
-
-    <div id="progressBar" class="progress-bar"></div>
-
-  </div>
-
-</div>
-
-
-<div id="interaction" class="hud interaction hidden"></div>
-
-
-<div id="birthdayPanel" class="birthday-panel hidden">
-
-  <div class="birthday-orbit"></div>
-
-  <div class="birthday-content">
-
-    <div class="small-caps">
-      THE FINAL STOP
-    </div>
-
-    <h1>
-      Happy Birthday,
-      <span id="birthdayName">Darling</span>.
-    </h1>
-
-    <p id="birthdayMessage">
-      Out of every star, every road, every city and every
-      possible universe, this is still the one where I would choose you.
-    </p>
-
-    <button id="restartBtn" class="primary-btn">
-      Take the journey again
-    </button>
-
-  </div>
-
-</div>
-
-
-<div id="factsModal" class="modal hidden">
-
-  <div class="modal-backdrop"></div>
-
-  <div class="modal-card">
-
-    <div class="modal-head">
-
-      <div>
-
-        <div class="small-caps">
-          RESEARCH NOTES
+        <div id="joystick">
+            <div id="stick"></div>
         </div>
 
-        <h2>
-          Science and place data
-        </h2>
+        <button id="jumpBtn" class="action">JUMP</button>
+        <button id="runBtn" class="action">RUN</button>
+        <button id="holdBtn" class="action">♥</button>
+        <button id="interactBtn" class="action">E</button>
+        <button id="menuBtn" class="action">☰</button>
 
-      </div>
-
-      <button id="closeFactsBtn" class="icon-btn">
-        ×
-      </button>
+        <div id="menu" class="glass">
+            <button class="menuButton" id="inventoryBtn">Inventory</button>
+            <button class="menuButton" id="musicBtn">Music</button>
+            <button class="menuButton" id="dayBtn">Day / Night</button>
+            <button class="menuButton" id="galaxyBtn">Galaxy View</button>
+            <button class="menuButton" id="cityBtn">City View</button>
+            <button class="menuButton" id="fullBtn">Fullscreen</button>
+        </div>
 
     </div>
-
-    <div id="factsBody" class="facts-body"></div>
-
-  </div>
-
 </div>
 
+<div id="cinematic">
+    <h1 id="cinematicTitle"></h1>
+    <p id="cinematicText"></p>
 </div>
 
+<div id="birthday">
+    <div id="birthdayBox" class="glass">
+        <h1>Happy Birthday</h1>
+        <p>
+            The universe is enormous.<br>
+            Billions of galaxies. Trillions of stars.<br><br>
+            And somehow, in all of that space,<br>
+            I found you.
+        </p>
+        <button id="startButton">ENTER OUR UNIVERSE</button>
+    </div>
+</div>
 
 <script type="importmap">
 {
-  "imports":{
-    "three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
-    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
-  }
+    "imports":{
+        "three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+    }
 }
 </script>
 
-<script type="module" src="./app.js"></script>
+<script type="module">
 
+import * as THREE from "three";
 
-<script>
+/* ============================================================
+   BASIC GAME CONFIGURATION
+============================================================ */
 
-const story = [
+const CONFIG = {
 
-  [
-    'A DATE ACROSS THE UNIVERSE',
-    'Before we begin…',
-    'I wanted to take you somewhere bigger than a birthday card.'
-  ],
+    gravity: -28,
 
-  [
-    'THE MILKY WAY',
-    'Let’s start here.',
-    'There are hundreds of billions of stars in our galaxy. Somehow, we still found each other.'
-  ],
+    walkSpeed: 5,
 
-  [
-    'THE SOLAR SYSTEM',
-    'Then, home.',
-    'Eight planets. One Sun. One tiny blue world that became ours.'
-  ],
+    runSpeed: 10,
 
-  [
-    'EARTH',
-    'One world.',
-    'Continents, oceans, countries, cities — millions of stories.'
-  ],
+    jumpPower: 10,
 
-  [
-    'INDIA',
-    'And then… us.',
-    'A whole country, and somewhere inside it, two cities waiting for our date.'
-  ],
+    playerRadius: .45,
 
-  [
-    'THE CITIES',
-    'Hold my hand.',
-    'Now the big universe gets small. Roads. Lights. Cafés. You and me.'
-  ]
+    worldSize: 240,
+
+    citySize: 160,
+
+    stars: 8000,
+
+    galaxyStars: 10000,
+
+    npcCount: 35,
+
+    vehicleCount: 18
+
+};
+
+/* ============================================================
+   GLOBAL GAME STATE
+============================================================ */
+
+const GAME = {
+
+    mode:"galaxy",
+
+    city:"indore",
+
+    running:false,
+
+    day:true,
+
+    handHolding:false,
+
+    music:true,
+
+    objectiveIndex:0,
+
+    inventory:{
+        rose:0,
+        chocolate:0,
+        gift:0,
+        letter:0,
+        star:0
+    },
+
+    completed:{},
+
+    nearby:null,
+
+    dialogue:false,
+
+    cameraMode:"third",
+
+    time:0
+
+};
+
+/* ============================================================
+   THREE.JS CORE
+============================================================ */
+
+const renderer = new THREE.WebGLRenderer({
+    antialias:true,
+    powerPreference:"high-performance"
+});
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio,1.7)
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x02030b);
+
+const camera = new THREE.PerspectiveCamera(
+    60,
+    innerWidth/innerHeight,
+    .05,
+    10000
+);
+
+camera.position.set(0,5,10);
+
+/* ============================================================
+   LIGHTING
+============================================================ */
+
+const ambient = new THREE.HemisphereLight(
+    0x9aa8ff,
+    0x151020,
+    1.7
+);
+
+scene.add(ambient);
+
+const sun = new THREE.DirectionalLight(
+    0xffffff,
+    3
+);
+
+sun.position.set(50,100,40);
+
+sun.castShadow=true;
+
+sun.shadow.mapSize.width=2048;
+sun.shadow.mapSize.height=2048;
+
+sun.shadow.camera.left=-100;
+sun.shadow.camera.right=100;
+sun.shadow.camera.top=100;
+sun.shadow.camera.bottom=-100;
+
+scene.add(sun);
+
+const moon = new THREE.DirectionalLight(
+    0x596eff,
+    .5
+);
+
+moon.position.set(-60,40,-80);
+
+scene.add(moon);
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function rand(a,b){
+    return a + Math.random()*(b-a);
+}
+
+function clamp(v,a,b){
+    return Math.max(a,Math.min(b,v));
+}
+
+function distance(a,b){
+    return a.distanceTo(b);
+}
+
+function createTextSprite(text,color="#ffffff"){
+
+    const canvas=document.createElement("canvas");
+
+    canvas.width=512;
+    canvas.height=128;
+
+    const ctx=canvas.getContext("2d");
+
+    ctx.clearRect(0,0,512,128);
+
+    ctx.font="bold 42px Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+
+    ctx.fillStyle="rgba(0,0,0,.45)";
+    ctx.fillRect(20,20,472,88);
+
+    ctx.fillStyle=color;
+    ctx.fillText(text,256,64);
+
+    const texture=new THREE.CanvasTexture(canvas);
+
+    const material=new THREE.SpriteMaterial({
+        map:texture,
+        transparent:true
+    });
+
+    const sprite=new THREE.Sprite(material);
+
+    sprite.scale.set(4,1,1);
+
+    return sprite;
+}
+
+function makeMaterial(color,roughness=.8){
+
+    return new THREE.MeshStandardMaterial({
+        color,
+        roughness,
+        metalness:.05
+    });
+}
+
+/* ============================================================
+   LOADING
+============================================================ */
+
+let loadingProgress=0;
+
+function progress(){
+
+    loadingProgress++;
+
+    document.getElementById("loadbar").style.width =
+        `${Math.min(100,loadingProgress)}%`;
+}
+
+/* ============================================================
+   STAR SYSTEM
+============================================================ */
+
+const starGroup=new THREE.Group();
+
+scene.add(starGroup);
+
+function buildStarField(){
+
+    const geometry=new THREE.BufferGeometry();
+
+    const positions=new Float32Array(CONFIG.stars*3);
+
+    const colors=new Float32Array(CONFIG.stars*3);
+
+    const color=new THREE.Color();
+
+    for(let i=0;i<CONFIG.stars;i++){
+
+        const r=rand(100,1500);
+
+        const theta=Math.random()*Math.PI*2;
+
+        const y=rand(-300,300);
+
+        positions[i*3]=Math.cos(theta)*r;
+        positions[i*3+1]=y;
+        positions[i*3+2]=Math.sin(theta)*r;
+
+        const temperature=Math.random();
+
+        if(temperature<.15)
+            color.set(0x8bb8ff);
+
+        else if(temperature<.4)
+            color.set(0xffffff);
+
+        else if(temperature<.75)
+            color.set(0xfff2c0);
+
+        else
+            color.set(0xff9d66);
+
+        colors[i*3]=color.r;
+        colors[i*3+1]=color.g;
+        colors[i*3+2]=color.b;
+    }
+
+    geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions,3)
+    );
+
+    geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(colors,3)
+    );
+
+    const material=new THREE.PointsMaterial({
+        size:1.6,
+        sizeAttenuation:true,
+        vertexColors:true,
+        transparent:true,
+        opacity:.9
+    });
+
+    const stars=new THREE.Points(
+        geometry,
+        material
+    );
+
+    starGroup.add(stars);
+
+    progress();
+}
+
+buildStarField();
+
+/* ============================================================
+   MILKY WAY GALAXY
+============================================================ */
+
+const galaxyGroup=new THREE.Group();
+
+scene.add(galaxyGroup);
+
+function buildGalaxy(){
+
+    const geometry=new THREE.BufferGeometry();
+
+    const count=CONFIG.galaxyStars;
+
+    const positions=new Float32Array(count*3);
+
+    const colors=new Float32Array(count*3);
+
+    const color=new THREE.Color();
+
+    for(let i=0;i<count;i++){
+
+        const radius=Math.pow(Math.random(),.6)*420;
+
+        const arm=Math.floor(Math.random()*5);
+
+        const baseAngle =
+            radius*.018 +
+            arm*(Math.PI*2/5);
+
+        const angle=
+            baseAngle+
+            rand(-.18,.18);
+
+        const thickness=rand(-10,10);
+
+        positions[i*3]=
+            Math.cos(angle)*radius;
+
+        positions[i*3+1]=
+            thickness;
+
+        positions[i*3+2]=
+            Math.sin(angle)*radius;
+
+        color.setHSL(
+            rand(.55,.68),
+            rand(.1,.5),
+            rand(.5,1)
+        );
+
+        colors[i*3]=color.r;
+        colors[i*3+1]=color.g;
+        colors[i*3+2]=color.b;
+    }
+
+    geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions,3)
+    );
+
+    geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(colors,3)
+    );
+
+    const material=new THREE.PointsMaterial({
+        size:1.5,
+        vertexColors:true,
+        transparent:true,
+        opacity:.8
+    });
+
+    galaxyGroup.add(
+        new THREE.Points(
+            geometry,
+            material
+        )
+    );
+
+    const core=new THREE.Mesh(
+        new THREE.SphereGeometry(20,32,32),
+        new THREE.MeshBasicMaterial({
+            color:0xffc27a,
+            transparent:true,
+            opacity:.3
+        })
+    );
+
+    galaxyGroup.add(core);
+
+    progress();
+}
+
+buildGalaxy();
+
+/* ============================================================
+   NEBULA
+============================================================ */
+
+function createNebula(position,color){
+
+    const group=new THREE.Group();
+
+    for(let i=0;i<70;i++){
+
+        const material=new THREE.SpriteMaterial({
+            color,
+            transparent:true,
+            opacity:rand(.015,.08),
+            blending:THREE.AdditiveBlending
+        });
+
+        const sprite=new THREE.Sprite(material);
+
+        const s=rand(15,80);
+
+        sprite.scale.set(s,s*.55,1);
+
+        sprite.position.set(
+            rand(-40,40),
+            rand(-20,20),
+            rand(-40,40)
+        );
+
+        group.add(sprite);
+    }
+
+    group.position.copy(position);
+
+    scene.add(group);
+
+    return group;
+}
+
+createNebula(
+    new THREE.Vector3(350,100,-400),
+    0x9c63ff
+);
+
+createNebula(
+    new THREE.Vector3(-400,-100,-300),
+    0xff4eaa
+);
+
+/* ============================================================
+   BLACK HOLE
+============================================================ */
+
+function createBlackHole(){
+
+    const group=new THREE.Group();
+
+    const hole=new THREE.Mesh(
+        new THREE.SphereGeometry(12,32,32),
+        new THREE.MeshBasicMaterial({
+            color:0x000000
+        })
+    );
+
+    group.add(hole);
+
+    const ringGeometry=
+        new THREE.RingGeometry(15,32,96);
+
+    const ringMaterial=
+        new THREE.MeshBasicMaterial({
+            color:0xff7b25,
+            transparent:true,
+            opacity:.55,
+            side:THREE.DoubleSide,
+            blending:THREE.AdditiveBlending
+        });
+
+    const ring=new THREE.Mesh(
+        ringGeometry,
+        ringMaterial
+    );
+
+    ring.rotation.x=Math.PI/2;
+
+    group.add(ring);
+
+    group.position.set(
+        -400,
+        150,
+        -500
+    );
+
+    scene.add(group);
+
+    return group;
+}
+
+const blackHole=createBlackHole();
+
+/* ============================================================
+   SOLAR SYSTEM
+============================================================ */
+
+const solarGroup=new THREE.Group();
+
+scene.add(solarGroup);
+
+function createPlanet(radius,color,distanceFromSun,speed){
+
+    const planet=new THREE.Mesh(
+        new THREE.SphereGeometry(radius,24,24),
+        makeMaterial(color)
+    );
+
+    planet.userData.orbit={
+        radius:distanceFromSun,
+        speed,
+        angle:Math.random()*Math.PI*2
+    };
+
+    solarGroup.add(planet);
+
+    return planet;
+}
+
+const sunMesh=new THREE.Mesh(
+    new THREE.SphereGeometry(8,32,32),
+    new THREE.MeshBasicMaterial({
+        color:0xffc14d
+    })
+);
+
+solarGroup.add(sunMesh);
+
+const sunLight=new THREE.PointLight(
+    0xffc875,
+    8,
+    700
+);
+
+solarGroup.add(sunLight);
+
+createPlanet(1.2,0x888888,16,.9);
+createPlanet(1.8,0xffc078,24,.7);
+createPlanet(2,0x3377ff,35,.5);
+createPlanet(1.5,0xd65d45,47,.4);
+createPlanet(5,0xc79a6b,65,.2);
+createPlanet(4,0xd0a76a,85,.16);
+createPlanet(3,0x74b8ff,105,.11);
+createPlanet(3,0x3c67cc,125,.08);
+
+solarGroup.visible=false;
+
+/* ============================================================
+   CITY WORLD
+============================================================ */
+
+const cityGroup=new THREE.Group();
+
+scene.add(cityGroup);
+
+const cityObjects=[];
+
+function createGround(){
+
+    const ground=new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            CONFIG.citySize,
+            CONFIG.citySize,
+            30,
+            30
+        ),
+        makeMaterial(0x526b42)
+    );
+
+    ground.rotation.x=-Math.PI/2;
+
+    ground.receiveShadow=true;
+
+    cityGroup.add(ground);
+
+    cityObjects.push(ground);
+
+    return ground;
+}
+
+createGround();
+
+/* ============================================================
+   ROADS
+============================================================ */
+
+function createRoad(x,z,w,d){
+
+    const road=new THREE.Mesh(
+        new THREE.BoxGeometry(w,.04,d),
+        makeMaterial(0x24242b)
+    );
+
+    road.position.set(x,.02,z);
+
+    road.receiveShadow=true;
+
+    cityGroup.add(road);
+
+    for(let i=-w/2+2;i<w/2;i+=5){
+
+        const line=new THREE.Mesh(
+            new THREE.BoxGeometry(.2,.045,1.5),
+            makeMaterial(0xf3e7a1)
+        );
+
+        line.position.set(
+            x+i,
+            .06,
+            z
+        );
+
+        cityGroup.add(line);
+    }
+}
+
+createRoad(0,0,160,10);
+createRoad(0,0,10,160);
+createRoad(0,-35,160,7);
+createRoad(40,0,7,160);
+
+/* ============================================================
+   BUILDINGS
+============================================================ */
+
+function createBuilding(
+    x,
+    z,
+    width,
+    depth,
+    height,
+    color
+){
+
+    const group=new THREE.Group();
+
+    const body=new THREE.Mesh(
+        new THREE.BoxGeometry(
+            width,
+            height,
+            depth
+        ),
+        makeMaterial(color)
+    );
+
+    body.position.y=height/2;
+
+    body.castShadow=true;
+    body.receiveShadow=true;
+
+    group.add(body);
+
+    const floors=Math.max(
+        1,
+        Math.floor(height/3)
+    );
+
+    for(let f=0;f<floors;f++){
+
+        const windows=Math.max(
+            1,
+            Math.floor(width/2)
+        );
+
+        for(let w=0;w<windows;w++){
+
+            const windowMesh=new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    .6,
+                    .8,
+                    .05
+                ),
+                makeMaterial(
+                    Math.random()>.5
+                        ? 0xffeeb0
+                        : 0x5ca7c7
+                )
+            );
+
+            windowMesh.position.set(
+                -width/2+
+                1+
+                w*(width-2)/(windows-1||1),
+
+                1.2+
+                f*3,
+
+                depth/2+.03
+            );
+
+            group.add(windowMesh);
+        }
+    }
+
+    group.position.set(x,0,z);
+
+    cityGroup.add(group);
+
+    cityObjects.push(body);
+
+    return group;
+}
+
+/* ============================================================
+   CITY BLOCKS
+============================================================ */
+
+function generateCity(){
+
+    const colors=[
+        0xc58b61,
+        0xd1a475,
+        0xb97c59,
+        0x8b91a8,
+        0xd4c4a4,
+        0x94785d,
+        0xb7a18b
+    ];
+
+    for(let x=-70;x<=70;x+=14){
+
+        for(let z=-70;z<=70;z+=14){
+
+            const nearRoad =
+                Math.abs(z)<7 ||
+                Math.abs(x)<7 ||
+                Math.abs(z+35)<5 ||
+                Math.abs(x-40)<5;
+
+            if(nearRoad) continue;
+
+            createBuilding(
+                x+rand(-2,2),
+                z+rand(-2,2),
+                rand(7,11),
+                rand(7,11),
+                rand(4,15),
+                colors[
+                    Math.floor(
+                        Math.random()*colors.length
+                    )
+                ]
+            );
+        }
+    }
+}
+
+generateCity();
+
+/* ============================================================
+   RAJWADA-INSPIRED LANDMARK
+============================================================ */
+
+function createRajwada(){
+
+    const group=new THREE.Group();
+
+    const stone=makeMaterial(0x9b6d4b);
+
+    const main=new THREE.Mesh(
+        new THREE.BoxGeometry(24,15,14),
+        stone
+    );
+
+    main.position.y=7.5;
+
+    group.add(main);
+
+    for(let i=0;i<7;i++){
+
+        const floor=new THREE.Mesh(
+            new THREE.BoxGeometry(
+                19-i*1.2,
+                2,
+                11-i*.5
+            ),
+            stone
+        );
+
+        floor.position.y=
+            15+i*2;
+
+        group.add(floor);
+    }
+
+    const gate=new THREE.Mesh(
+        new THREE.BoxGeometry(
+            7,
+            10,
+            .8
+        ),
+        makeMaterial(0x33241c)
+    );
+
+    gate.position.set(
+        0,
+        5,
+        7.2
+    );
+
+    group.add(gate);
+
+    group.position.set(
+        -40,
+        0,
+        -45
+    );
+
+    cityGroup.add(group);
+
+    const label=createTextSprite(
+        "RAJWADA • INDORE",
+        "#ffd69b"
+    );
+
+    label.position.set(
+        -40,
+        27,
+        -45
+    );
+
+    cityGroup.add(label);
+
+    return group;
+}
+
+const rajwada=createRajwada();
+
+/* ============================================================
+   GOLGHAR-INSPIRED LANDMARK
+============================================================ */
+
+function createGolghar(){
+
+    const group=new THREE.Group();
+
+    const dome=new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            10,
+            13,
+            15,
+            40
+        ),
+        makeMaterial(0xc69b67)
+    );
+
+    dome.position.y=7.5;
+
+    group.add(dome);
+
+    const roof=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            10,
+            40,
+            20,
+            0,
+            Math.PI*2,
+            0,
+            Math.PI/2
+        ),
+        makeMaterial(0xb98957)
+    );
+
+    roof.position.y=15;
+
+    group.add(roof);
+
+    const stairGroup=new THREE.Group();
+
+    for(let i=0;i<40;i++){
+
+        const a=i*.25;
+
+        const step=new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.3,
+                .25,
+                3
+            ),
+            makeMaterial(0x8c6543)
+        );
+
+        step.position.set(
+            Math.cos(a)*12,
+            i*.38,
+            Math.sin(a)*12
+        );
+
+        step.lookAt(
+            new THREE.Vector3(0,step.position.y,0)
+        );
+
+        stairGroup.add(step);
+    }
+
+    group.add(stairGroup);
+
+    group.position.set(
+        45,
+        0,
+        -40
+    );
+
+    cityGroup.add(group);
+
+    const label=createTextSprite(
+        "GOLGHAR • PATNA",
+        "#ffe1a8"
+    );
+
+    label.position.set(
+        45,
+        23,
+        -40
+    );
+
+    cityGroup.add(label);
+
+    return group;
+}
+
+const golghar=createGolghar();
+
+/* ============================================================
+   CAFE
+============================================================ */
+
+function createCafe(){
+
+    const group=new THREE.Group();
+
+    const building=new THREE.Mesh(
+        new THREE.BoxGeometry(14,5,10),
+        makeMaterial(0x8f5f75)
+    );
+
+    building.position.y=2.5;
+
+    group.add(building);
+
+    const roof=new THREE.Mesh(
+        new THREE.BoxGeometry(15,.5,11),
+        makeMaterial(0x33233a)
+    );
+
+    roof.position.y=5.2;
+
+    group.add(roof);
+
+    const sign=createTextSprite(
+        "♥ STARLIGHT CAFE",
+        "#ff92ca"
+    );
+
+    sign.position.y=7;
+
+    group.add(sign);
+
+    group.position.set(
+        20,
+        0,
+        28
+    );
+
+    cityGroup.add(group);
+
+    return group;
+}
+
+const cafe=createCafe();
+
+/* ============================================================
+   RESTAURANT
+============================================================ */
+
+function createRestaurant(){
+
+    const group=new THREE.Group();
+
+    const body=new THREE.Mesh(
+        new THREE.BoxGeometry(13,4,9),
+        makeMaterial(0x6b5146)
+    );
+
+    body.position.y=2;
+
+    group.add(body);
+
+    const sign=createTextSprite(
+        "MOONLIGHT RESTAURANT",
+        "#ffe5b0"
+    );
+
+    sign.position.y=6;
+
+    group.add(sign);
+
+    group.position.set(
+        -20,
+        0,
+        30
+    );
+
+    cityGroup.add(group);
+
+    return group;
+}
+
+createRestaurant();
+
+/* ============================================================
+   TREES
+============================================================ */
+
+function createTree(x,z){
+
+    const group=new THREE.Group();
+
+    const trunk=new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            .25,
+            .4,
+            3,
+            8
+        ),
+        makeMaterial(0x65452c)
+    );
+
+    trunk.position.y=1.5;
+
+    group.add(trunk);
+
+    const leaves=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            2.2,
+            10,
+            10
+        ),
+        makeMaterial(
+            Math.random()>.5
+                ? 0x2e7d4b
+                : 0x397f4d
+        )
+    );
+
+    leaves.position.y=4;
+
+    leaves.castShadow=true;
+
+    group.add(leaves);
+
+    group.position.set(x,0,z);
+
+    cityGroup.add(group);
+
+    return group;
+}
+
+for(let i=0;i<100;i++){
+
+    let x=rand(-75,75);
+    let z=rand(-75,75);
+
+    if(Math.abs(x)<12 || Math.abs(z)<12)
+        continue;
+
+    createTree(x,z);
+}
+
+/* ============================================================
+   FLOWERS
+============================================================ */
+
+function createFlower(x,z){
+
+    const group=new THREE.Group();
+
+    const stem=new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            .03,
+            .03,
+            .5,
+            5
+        ),
+        makeMaterial(0x2f8a4d)
+    );
+
+    stem.position.y=.25;
+
+    group.add(stem);
+
+    const flower=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .22,
+            8,
+            8
+        ),
+        makeMaterial(
+            Math.random()>.5
+                ? 0xff5f9a
+                : 0xffd65f
+        )
+    );
+
+    flower.position.y=.55;
+
+    group.add(flower);
+
+    group.position.set(x,0,z);
+
+    cityGroup.add(group);
+
+    return group;
+}
+
+for(let i=0;i<150;i++){
+
+    createFlower(
+        rand(-70,70),
+        rand(-70,70)
+    );
+}
+
+/* ============================================================
+   CHARACTER CREATION
+============================================================ */
+
+function createCharacter(
+    bodyColor,
+    skinColor,
+    hairColor
+){
+
+    const root=new THREE.Group();
+
+    const body=new THREE.Mesh(
+        new THREE.CapsuleGeometry(
+            .48,
+            1.2,
+            6,
+            12
+        ),
+        makeMaterial(bodyColor)
+    );
+
+    body.position.y=1.3;
+
+    body.castShadow=true;
+
+    root.add(body);
+
+    const head=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .38,
+            16,
+            16
+        ),
+        makeMaterial(skinColor)
+    );
+
+    head.position.y=2.35;
+
+    head.castShadow=true;
+
+    root.add(head);
+
+    const hair=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .41,
+            16,
+            16,
+            0,
+            Math.PI*2,
+            0,
+            Math.PI*.65
+        ),
+        makeMaterial(hairColor)
+    );
+
+    hair.position.y=2.5;
+
+    root.add(hair);
+
+    const armMaterial=
+        makeMaterial(skinColor);
+
+    const leftArm=new THREE.Mesh(
+        new THREE.CapsuleGeometry(
+            .13,
+            .65,
+            5,
+            8
+        ),
+        armMaterial
+    );
+
+    const rightArm=leftArm.clone();
+
+    leftArm.position.set(
+        -.62,
+        1.55,
+        0
+    );
+
+    rightArm.position.set(
+        .62,
+        1.55,
+        0
+    );
+
+    root.add(leftArm);
+    root.add(rightArm);
+
+    const legMaterial=
+        makeMaterial(0x20243a);
+
+    const leftLeg=new THREE.Mesh(
+        new THREE.CapsuleGeometry(
+            .16,
+            .7,
+            5,
+            8
+        ),
+        legMaterial
+    );
+
+    const rightLeg=leftLeg.clone();
+
+    leftLeg.position.set(
+        -.22,
+        .55,
+        0
+    );
+
+    rightLeg.position.set(
+        .22,
+        .55,
+        0
+    );
+
+    root.add(leftLeg);
+    root.add(rightLeg);
+
+    root.userData.parts={
+        body,
+        head,
+        hair,
+        leftArm,
+        rightArm,
+        leftLeg,
+        rightLeg
+    };
+
+    return root;
+}
+
+const player=createCharacter(
+    0x315cff,
+    0xd59c76,
+    0x1e1720
+);
+
+const companion=createCharacter(
+    0xff4f9b,
+    0xe0aa82,
+    0x54213f
+);
+
+player.position.set(
+    0,
+    0,
+    12
+);
+
+companion.position.set(
+    1.5,
+    0,
+    12
+);
+
+cityGroup.add(player);
+cityGroup.add(companion);
+
+/* ============================================================
+   CHARACTER STATE
+============================================================ */
+
+const playerState={
+    velocity:new THREE.Vector3(),
+    grounded:true,
+    direction:0,
+    moving:false
+};
+
+const companionState={
+    velocity:new THREE.Vector3(),
+    grounded:true
+};
+
+/* ============================================================
+   INPUT
+============================================================ */
+
+const keys={};
+
+window.addEventListener(
+    "keydown",
+    e=>{
+        keys[e.key.toLowerCase()]=true;
+
+        if(e.key.toLowerCase()==="e")
+            interact();
+
+        if(e.key.toLowerCase()==="f")
+            toggleHandHold();
+
+        if(e.key.toLowerCase()==="i")
+            toggleInventory();
+
+        if(e.code==="Space")
+            jump();
+
+        if(e.key==="Shift")
+            keys.shift=true;
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e=>{
+        keys[e.key.toLowerCase()]=false;
+
+        if(e.key==="Shift")
+            keys.shift=false;
+    }
+);
+
+/* ============================================================
+   TOUCH JOYSTICK
+============================================================ */
+
+const joystick=
+    document.getElementById("joystick");
+
+const stick=
+    document.getElementById("stick");
+
+const joy={
+    x:0,
+    y:0,
+    active:false
+};
+
+joystick.addEventListener(
+    "pointerdown",
+    e=>{
+        joy.active=true;
+        joystick.setPointerCapture(e.pointerId);
+        updateJoystick(e);
+    }
+);
+
+joystick.addEventListener(
+    "pointermove",
+    e=>{
+        if(joy.active)
+            updateJoystick(e);
+    }
+);
+
+joystick.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+joystick.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
+
+function updateJoystick(e){
+
+    const rect=joystick.getBoundingClientRect();
+
+    let x=
+        e.clientX-
+        (rect.left+rect.width/2);
+
+    let y=
+        e.clientY-
+        (rect.top+rect.height/2);
+
+    const max=40;
+
+    const len=Math.sqrt(x*x+y*y);
+
+    if(len>max){
+
+        x=x/len*max;
+        y=y/len*max;
+    }
+
+    joy.x=x/max;
+    joy.y=y/max;
+
+    stick.style.transform=
+        `translate(${x}px,${y}px)`;
+}
+
+function resetJoystick(){
+
+    joy.x=0;
+    joy.y=0;
+    joy.active=false;
+
+    stick.style.transform=
+        "translate(0,0)";
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+document
+    .getElementById("jumpBtn")
+    .addEventListener("pointerdown",jump);
+
+document
+    .getElementById("runBtn")
+    .addEventListener(
+        "pointerdown",
+        ()=>{
+            keys.shift=true;
+        }
+    );
+
+document
+    .getElementById("runBtn")
+    .addEventListener(
+        "pointerup",
+        ()=>{
+            keys.shift=false;
+        }
+    );
+
+document
+    .getElementById("interactBtn")
+    .addEventListener(
+        "pointerdown",
+        interact
+    );
+
+document
+    .getElementById("holdBtn")
+    .addEventListener(
+        "pointerdown",
+        toggleHandHold
+    );
+
+document
+    .getElementById("menuBtn")
+    .addEventListener(
+        "pointerdown",
+        ()=>{
+            const m=document.getElementById("menu");
+
+            m.style.display=
+                m.style.display==="block"
+                ?"none"
+                :"block";
+        }
+    );
+
+document
+    .getElementById("inventoryBtn")
+    .addEventListener(
+        "click",
+        toggleInventory
+    );
+
+document
+    .getElementById("dayBtn")
+    .addEventListener(
+        "click",
+        toggleDay
+    );
+
+document
+    .getElementById("galaxyBtn")
+    .addEventListener(
+        "click",
+        ()=>setMode("galaxy")
+    );
+
+document
+    .getElementById("cityBtn")
+    .addEventListener(
+        "click",
+        ()=>setMode("city")
+    );
+
+document
+    .getElementById("fullBtn")
+    .addEventListener(
+        "click",
+        ()=>{
+            document.documentElement.requestFullscreen?.();
+        }
+    );
+
+/* ============================================================
+   CAMERA TOUCH LOOK
+============================================================ */
+
+let lookActive=false;
+let lastX=0;
+
+renderer.domElement.addEventListener(
+    "pointerdown",
+    e=>{
+        if(e.pointerType==="touch"){
+            lookActive=true;
+            lastX=e.clientX;
+        }
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointermove",
+    e=>{
+        if(!lookActive)
+            return;
+
+        if(e.pointerType!=="touch")
+            return;
+
+        const dx=e.clientX-lastX;
+
+        cameraYaw-=dx*.006;
+
+        lastX=e.clientX;
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointerup",
+    ()=>{
+        lookActive=false;
+    }
+);
+
+/* ============================================================
+   PLAYER MOVEMENT
+============================================================ */
+
+let cameraYaw=0;
+
+function getMovement(){
+
+    let x=0;
+    let z=0;
+
+    if(keys.w)
+        z-=1;
+
+    if(keys.s)
+        z+=1;
+
+    if(keys.a)
+        x-=1;
+
+    if(keys.d)
+        x+=1;
+
+    x+=joy.x;
+    z+=joy.y;
+
+    const length=Math.sqrt(
+        x*x+z*z
+    );
+
+    if(length>1){
+
+        x/=length;
+        z/=length;
+    }
+
+    return {x,z};
+}
+
+function jump(){
+
+    if(
+        GAME.mode==="city" &&
+        playerState.grounded
+    ){
+
+        playerState.velocity.y=
+            CONFIG.jumpPower;
+
+        playerState.grounded=false;
+    }
+}
+
+/* ============================================================
+   SIMPLE WORLD COLLISION
+============================================================ */
+
+function keepInsideWorld(object){
+
+    object.position.x=
+        clamp(
+            object.position.x,
+            -75,
+            75
+        );
+
+    object.position.z=
+        clamp(
+            object.position.z,
+            -75,
+            75
+        );
+}
+
+function resolveBuildingCollision(){
+
+    const p=player.position;
+
+    for(const object of cityObjects){
+
+        if(!object.geometry)
+            continue;
+
+        const box=
+            new THREE.Box3()
+                .setFromObject(object);
+
+        const closest=new THREE.Vector3(
+            clamp(
+                p.x,
+                box.min.x,
+                box.max.x
+            ),
+            p.y,
+            clamp(
+                p.z,
+                box.min.z,
+                box.max.z
+            )
+        );
+
+        const dist=p.distanceTo(
+            closest
+        );
+
+        if(
+            dist<CONFIG.playerRadius
+        ){
+
+            const dx=p.x-closest.x;
+            const dz=p.z-closest.z;
+
+            if(
+                Math.abs(dx)>
+                Math.abs(dz)
+            ){
+
+                p.x+=
+                    dx>0
+                    ?CONFIG.playerRadius-dist
+                    :-(CONFIG.playerRadius-dist);
+
+            }else{
+
+                p.z+=
+                    dz>0
+                    ?CONFIG.playerRadius-dist
+                    :-(CONFIG.playerRadius-dist);
+            }
+        }
+    }
+}
+
+/* ============================================================
+   PLAYER UPDATE
+============================================================ */
+
+function updatePlayer(dt){
+
+    if(GAME.mode!=="city")
+        return;
+
+    const movement=getMovement();
+
+    const moving=
+        Math.abs(movement.x)+
+        Math.abs(movement.z)>.05;
+
+    playerState.moving=moving;
+
+    const speed=
+        keys.shift
+        ?CONFIG.runSpeed
+        :CONFIG.walkSpeed;
+
+    const forward=new THREE.Vector3(
+        Math.sin(cameraYaw),
+        0,
+        Math.cos(cameraYaw)
+    );
+
+    const right=new THREE.Vector3(
+        Math.cos(cameraYaw),
+        0,
+        -Math.sin(cameraYaw)
+    );
+
+    const direction=new THREE.Vector3();
+
+    direction.addScaledVector(
+        right,
+        movement.x
+    );
+
+    direction.addScaledVector(
+        forward,
+        movement.z
+    );
+
+    if(direction.length()>0){
+
+        direction.normalize();
+
+        player.position.addScaledVector(
+            direction,
+            speed*dt
+        );
+
+        player.rotation.y=
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+    }
+
+    playerState.velocity.y+=
+        CONFIG.gravity*dt;
+
+    player.position.y+=
+        playerState.velocity.y*dt;
+
+    if(player.position.y<=0){
+
+        player.position.y=0;
+
+        playerState.velocity.y=0;
+
+        playerState.grounded=true;
+    }
+
+    resolveBuildingCollision();
+
+    keepInsideWorld(player);
+
+    animateCharacter(
+        player,
+        moving,
+        GAME.time
+    );
+}
+
+/* ============================================================
+   COMPANION AI
+============================================================ */
+
+function updateCompanion(dt){
+
+    if(GAME.mode!=="city")
+        return;
+
+    let target;
+
+    if(GAME.handHolding){
+
+        const handOffset=
+            new THREE.Vector3(
+                1.5,
+                0,
+                .1
+            );
+
+        handOffset.applyAxisAngle(
+            new THREE.Vector3(0,1,0),
+            player.rotation.y
+        );
+
+        target=
+            player.position.clone()
+            .add(handOffset);
+
+    }else{
+
+        const desired=
+            new THREE.Vector3(
+                1.8,
+                0,
+                2
+            );
+
+        desired.applyAxisAngle(
+            new THREE.Vector3(0,1,0),
+            player.rotation.y
+        );
+
+        target=
+            player.position.clone()
+            .add(desired);
+    }
+
+    const delta=
+        target.clone()
+        .sub(companion.position);
+
+    const dist=delta.length();
+
+    if(dist>.3){
+
+        delta.normalize();
+
+        const speed=
+            GAME.handHolding
+            ?CONFIG.walkSpeed
+            :CONFIG.walkSpeed*.85;
+
+        companion.position.addScaledVector(
+            delta,
+            Math.min(
+                speed*dt,
+                dist
+            )
+        );
+
+        companion.rotation.y=
+            Math.atan2(
+                delta.x,
+                delta.z
+            );
+    }
+
+    companion.position.y=0;
+
+    animateCharacter(
+        companion,
+        dist>.4,
+        GAME.time
+    );
+}
+
+/* ============================================================
+   CHARACTER ANIMATION
+============================================================ */
+
+function animateCharacter(
+    character,
+    moving,
+    time
+){
+
+    const p=
+        character.userData.parts;
+
+    const swing=
+        moving
+        ?Math.sin(time*10)*.5
+        :0;
+
+    p.leftLeg.rotation.x=swing;
+    p.rightLeg.rotation.x=-swing;
+
+    p.leftArm.rotation.x=-swing*.8;
+    p.rightArm.rotation.x=swing*.8;
+
+    if(
+        character===player &&
+        GAME.handHolding
+    ){
+
+        p.rightArm.rotation.z=-.8;
+        p.rightArm.rotation.x=.3;
+
+        const cp=
+            companion.userData.parts;
+
+        cp.leftArm.rotation.z=.8;
+        cp.leftArm.rotation.x=.3;
+    }
+}
+
+/* ============================================================
+   HAND HOLD
+============================================================ */
+
+function toggleHandHold(){
+
+    if(
+        distance(
+            player.position,
+            companion.position
+        )<3
+    ){
+
+        GAME.handHolding=
+            !GAME.handHolding;
+
+        if(GAME.handHolding){
+
+            showDialogue(
+                "Her",
+                "Come on. Let's see what this little universe has for us."
+            );
+
+        }else{
+
+            showDialogue(
+                "Her",
+                "Okay... but don't wander too far."
+            );
+        }
+    }
+}
+
+/* ============================================================
+   INTERACTABLE OBJECTS
+============================================================ */
+
+const interactables=[];
+
+function addInteractable(
+    name,
+    position,
+    type,
+    action
+){
+
+    const marker=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .45,
+                12,
+                12
+            ),
+            new THREE.MeshBasicMaterial({
+                color:
+                    type==="flower"
+                    ?0xff55aa
+                    :type==="chocolate"
+                    ?0x6b351c
+                    :type==="gift"
+                    ?0xffd43b
+                    :0x8e65ff
+            })
+        );
+
+    marker.position.copy(position);
+
+    marker.position.y+=.8;
+
+    cityGroup.add(marker);
+
+    const label=
+        createTextSprite(
+            name,
+            "#ffffff"
+        );
+
+    label.position.copy(
+        marker.position
+    );
+
+    label.position.y+=1.1;
+
+    cityGroup.add(label);
+
+    const item={
+        name,
+        position:marker.position,
+        type,
+        action,
+        marker
+    };
+
+    interactables.push(item);
+
+    return item;
+}
+
+/* ============================================================
+   QUEST SYSTEM
+============================================================ */
+
+const quests=[
+
+    {
+        id:"start",
+        text:"Explore the world together.",
+        trigger:()=>true
+    },
+
+    {
+        id:"flower",
+        text:"Find a flower and give it to her.",
+        trigger:()=>GAME.inventory.rose>=1
+    },
+
+    {
+        id:"cafe",
+        text:"Visit Starlight Cafe together.",
+        trigger:()=>GAME.completed.cafe
+    },
+
+    {
+        id:"chocolate",
+        text:"Find chocolate for her.",
+        trigger:()=>GAME.inventory.chocolate>=1
+    },
+
+    {
+        id:"gift",
+        text:"Find the birthday gift.",
+        trigger:()=>GAME.inventory.gift>=1
+    },
+
+    {
+        id:"letter",
+        text:"Find the hidden love letter.",
+        trigger:()=>GAME.inventory.letter>=1
+    },
+
+    {
+        id:"indore",
+        text:"Visit Rajwada in Indore.",
+        trigger:()=>GAME.completed.rajwada
+    },
+
+    {
+        id:"patna",
+        text:"Travel to Patna and discover Golghar.",
+        trigger:()=>GAME.completed.golghar
+    },
+
+    {
+        id:"stars",
+        text:"Collect three fragments from the stars.",
+        trigger:()=>GAME.inventory.star>=3
+    },
+
+    {
+        id:"final",
+        text:"Watch the meteor shower together.",
+        trigger:()=>GAME.completed.meteor
+    }
 
 ];
 
+function updateQuest(){
 
-let s = 0;
-let started = false;
+    for(
+        let i=GAME.objectiveIndex;
+        i<quests.length;
+        i++
+    ){
 
+        const quest=quests[i];
 
-const cin = document.getElementById('cinematic');
-const k = document.getElementById('story-kicker');
-const t = document.getElementById('story-title');
-const c = document.getElementById('story-copy');
-const skip = document.getElementById('skip');
+        if(
+            quest.trigger() &&
+            !GAME.completed[quest.id]
+        ){
 
+            GAME.completed[quest.id]=true;
 
-function showStory(i){
+            if(i===GAME.objectiveIndex){
 
-  s = i;
+                GAME.objectiveIndex++;
 
-  k.textContent = story[i][0];
+                if(
+                    GAME.objectiveIndex>=
+                    quests.length
+                ){
 
-  t.textContent = story[i][1];
+                    finalBirthday();
 
-  c.textContent = story[i][2];
+                }else{
 
-  cin.style.opacity = '1';
+                    document.getElementById(
+                        "objectiveText"
+                    ).textContent=
+                        quests[
+                            GAME.objectiveIndex
+                        ].text;
+                }
+            }
+        }
 
-  skip.textContent =
-    i === 0
-      ? 'Enter the journey'
-      : 'Continue';
-
+        else break;
+    }
 }
 
+/* ============================================================
+   PICKUPS
+============================================================ */
 
-function enter(){
+addInteractable(
+    "ROSE",
+    new THREE.Vector3(-10,.5,20),
+    "flower",
+    ()=>{
+        GAME.inventory.rose++;
 
-  started = true;
+        showDialogue(
+            "Her",
+            "A flower? For me? You're already making this birthday unfairly cute."
+        );
+    }
+);
 
-  cin.style.opacity = '0';
+addInteractable(
+    "CHOCOLATE",
+    new THREE.Vector3(25,.5,28),
+    "chocolate",
+    ()=>{
+        GAME.inventory.chocolate++;
 
-  skip.style.opacity = '0';
+        showDialogue(
+            "Her",
+            "You remembered chocolate. I knew I liked you."
+        );
+    }
+);
 
-  setTimeout(() => {
+addInteractable(
+    "BIRTHDAY GIFT",
+    new THREE.Vector3(-25,.5,-5),
+    "gift",
+    ()=>{
+        GAME.inventory.gift++;
 
-    cin.classList.add('hiddenx');
+        showDialogue(
+            "Her",
+            "Wait... that's for me?"
+        );
+    }
+);
 
-    skip.classList.add('hiddenx');
+addInteractable(
+    "LOVE LETTER",
+    new THREE.Vector3(5,.5,-25),
+    "letter",
+    ()=>{
+        GAME.inventory.letter++;
 
-    window.__birthdayStoryStarted = true;
+        showDialogue(
+            "Her",
+            "I think I need a minute after reading this..."
+        );
+    }
+);
 
-  },1200);
+for(let i=0;i<5;i++){
 
+    addInteractable(
+        "STAR FRAGMENT",
+        new THREE.Vector3(
+            rand(-60,60),
+            .5,
+            rand(-60,60)
+        ),
+        "star",
+        ()=>{
+            GAME.inventory.star++;
+
+            showDialogue(
+                "Her",
+                "Another little piece of the universe."
+            );
+        }
+    );
 }
 
+/* ============================================================
+   NPC SYSTEM
+============================================================ */
 
-skip.onclick = enter;
+const npcs=[];
 
+function createNPC(i){
 
-window.addEventListener('keydown', e => {
+    const npc=createCharacter(
+        new THREE.Color().setHSL(
+            Math.random(),
+            .5,
+            .45
+        ),
+        0xc98f70,
+        0x211a20
+    );
 
-  if(e.key === 'Enter' && !started){
+    npc.scale.setScalar(
+        rand(.8,1)
+    );
 
-    enter();
+    npc.position.set(
+        rand(-65,65),
+        0,
+        rand(-65,65)
+    );
 
-  }
+    cityGroup.add(npc);
 
-});
+    npcs.push({
+        object:npc,
+        angle:Math.random()*Math.PI*2,
+        radius:rand(5,20),
+        speed:rand(.1,.5),
+        origin:npc.position.clone()
+    });
+}
 
+for(let i=0;i<CONFIG.npcCount;i++)
+    createNPC(i);
 
-setTimeout(() => {
+function updateNPCs(dt){
 
-  if(!started){
+    for(const npc of npcs){
 
-    showStory(0);
+        npc.angle+=
+            npc.speed*dt;
 
-  }
+        npc.object.position.x=
+            npc.origin.x+
+            Math.cos(npc.angle)*
+            npc.radius;
 
-},150);
+        npc.object.position.z=
+            npc.origin.z+
+            Math.sin(npc.angle)*
+            npc.radius;
 
+        npc.object.rotation.y=
+            -npc.angle;
 
-window.addEventListener(
-  'birthday-zone-change',
-  e => {
+        animateCharacter(
+            npc.object,
+            true,
+            GAME.time
+        );
+    }
+}
 
-    if(!started) return;
+/* ============================================================
+   VEHICLES
+============================================================ */
 
-    const i = e.detail?.index ?? 0;
+const vehicles=[];
 
-    if(i > 0 && i < 6){
+function createVehicle(){
 
-      showStory(Math.min(i,5));
+    const group=new THREE.Group();
 
-      setTimeout(() => {
+    const body=new THREE.Mesh(
+        new THREE.BoxGeometry(
+            2,
+            .8,
+            3.2
+        ),
+        makeMaterial(
+            Math.random()>.5
+                ?0xffa62e
+                :0x2a8cff
+        )
+    );
 
-        cin.style.opacity = '0';
+    body.position.y=.65;
 
-      },1900);
+    group.add(body);
 
+    const cabin=new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.7,
+            .7,
+            1.5
+        ),
+        makeMaterial(0x22242c)
+    );
+
+    cabin.position.y=1.3;
+
+    group.add(cabin);
+
+    group.position.set(
+        rand(-70,70),
+        0,
+        Math.random()>.5
+            ?-5
+            :5
+    );
+
+    cityGroup.add(group);
+
+    vehicles.push({
+        object:group,
+        speed:rand(2,5),
+        direction:Math.random()>.5?1:-1
+    });
+}
+
+for(let i=0;i<CONFIG.vehicleCount;i++)
+    createVehicle();
+
+function updateVehicles(dt){
+
+    for(const vehicle of vehicles){
+
+        vehicle.object.position.x+=
+            vehicle.speed*
+            vehicle.direction*
+            dt;
+
+        if(
+            vehicle.object.position.x>80
+        )
+            vehicle.object.position.x=-80;
+
+        if(
+            vehicle.object.position.x<-80
+        )
+            vehicle.object.position.x=80;
+
+        vehicle.object.rotation.y=
+            vehicle.direction>0
+            ?Math.PI/2
+            :-Math.PI/2;
+    }
+}
+
+/* ============================================================
+   INTERACTION
+============================================================ */
+
+function interact(){
+
+    if(GAME.dialogue)
+        return;
+
+    let closest=null;
+    let closestDistance=3;
+
+    for(const item of interactables){
+
+        const d=
+            distance(
+                player.position,
+                item.position
+            );
+
+        if(d<closestDistance){
+
+            closest=item;
+            closestDistance=d;
+        }
     }
 
-  }
+    if(closest){
+
+        closest.action();
+
+        closest.marker.visible=false;
+
+        const index=
+            interactables.indexOf(
+                closest
+            );
+
+        interactables.splice(
+            index,
+            1
+        );
+
+        updateInventoryUI();
+        updateQuest();
+    }
+
+    if(
+        distance(
+            player.position,
+            cafe.position
+        )<12
+    ){
+
+        GAME.completed.cafe=true;
+
+        showDialogue(
+            "Her",
+            "This place is perfect. Two drinks, one table, and absolutely no reason to leave."
+        );
+
+        updateQuest();
+    }
+
+    if(
+        distance(
+            player.position,
+            rajwada.position
+        )<18
+    ){
+
+        GAME.completed.rajwada=true;
+
+        cinematic(
+            "INDORE",
+            "Rajwada • A little piece of history in our little universe."
+        );
+
+        updateQuest();
+    }
+
+    if(
+        distance(
+            player.position,
+            golghar.position
+        )<18
+    ){
+
+        GAME.completed.golghar=true;
+
+        cinematic(
+            "PATNA",
+            "Golghar • Now let's find somewhere quiet to watch the sky."
+        );
+
+        updateQuest();
+    }
+}
+
+/* ============================================================
+   UI
+============================================================ */
+
+function updateInventoryUI(){
+
+    document.getElementById(
+        "roseCount"
+    ).textContent=
+        GAME.inventory.rose;
+
+    document.getElementById(
+        "chocoCount"
+    ).textContent=
+        GAME.inventory.chocolate;
+
+    document.getElementById(
+        "giftCount"
+    ).textContent=
+        GAME.inventory.gift;
+
+    document.getElementById(
+        "letterCount"
+    ).textContent=
+        GAME.inventory.letter;
+
+    document.getElementById(
+        "starCount"
+    ).textContent=
+        GAME.inventory.star;
+}
+
+function toggleInventory(){
+
+    const inv=
+        document.getElementById(
+            "inventory"
+        );
+
+    inv.style.display=
+        inv.style.display==="block"
+        ?"none"
+        :"block";
+}
+
+function toggleDay(){
+
+    GAME.day=!GAME.day;
+
+    if(GAME.day){
+
+        scene.background.set(
+            0x87bce8
+        );
+
+        ambient.intensity=2;
+        sun.intensity=3;
+        moon.intensity=.1;
+
+    }else{
+
+        scene.background.set(
+            0x02030b
+        );
+
+        ambient.intensity=.7;
+        sun.intensity=.2;
+        moon.intensity=1.5;
+    }
+}
+
+function showDialogue(
+    name,
+    text
+){
+
+    GAME.dialogue=true;
+
+    document.getElementById(
+        "dialogueName"
+    ).textContent=name;
+
+    document.getElementById(
+        "dialogueText"
+    ).textContent=text;
+
+    document.getElementById(
+        "dialogue"
+    ).style.display="block";
+}
+
+document
+    .getElementById("dialogueNext")
+    .addEventListener(
+        "click",
+        ()=>{
+            GAME.dialogue=false;
+
+            document.getElementById(
+                "dialogue"
+            ).style.display="none";
+        }
+    );
+
+/* ============================================================
+   CINEMATIC
+============================================================ */
+
+function cinematic(
+    title,
+    text
+){
+
+    const c=
+        document.getElementById(
+            "cinematic"
+        );
+
+    document.getElementById(
+        "cinematicTitle"
+    ).textContent=title;
+
+    document.getElementById(
+        "cinematicText"
+    ).textContent=text;
+
+    c.style.display="flex";
+
+    requestAnimationFrame(()=>{
+        c.style.opacity=1;
+    });
+
+    setTimeout(()=>{
+
+        c.style.opacity=0;
+
+        setTimeout(()=>{
+            c.style.display="none";
+        },1000);
+
+    },2800);
+}
+
+/* ============================================================
+   FINAL BIRTHDAY
+============================================================ */
+
+function finalBirthday(){
+
+    GAME.completed.final=true;
+
+    setMode("galaxy");
+
+    const b=
+        document.getElementById(
+            "birthday"
+        );
+
+    b.style.display="flex";
+
+    playMusic();
+
+    createHeartParticles();
+
+}
+
+/* ============================================================
+   HEART PARTICLES
+============================================================ */
+
+function createHeartParticles(){
+
+    const geometry=
+        new THREE.BufferGeometry();
+
+    const count=600;
+
+    const positions=
+        new Float32Array(
+            count*3
+        );
+
+    for(let i=0;i<count;i++){
+
+        const t=
+            Math.random()*Math.PI*2;
+
+        const x=
+            16*Math.pow(
+                Math.sin(t),
+                3
+            );
+
+        const y=
+            13*Math.cos(t)
+            -5*Math.cos(2*t)
+            -2*Math.cos(3*t)
+            -Math.cos(4*t);
+
+        positions[i*3]=
+            x*.7+
+            rand(-3,3);
+
+        positions[i*3+1]=
+            y*.7+
+            rand(-3,3);
+
+        positions[i*3+2]=
+            rand(-20,20);
+    }
+
+    geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(
+            positions,
+            3
+        )
+    );
+
+    const material=
+        new THREE.PointsMaterial({
+            color:0xff4f9b,
+            size:.3,
+            transparent:true,
+            opacity:.8
+        });
+
+    const hearts=
+        new THREE.Points(
+            geometry,
+            material
+        );
+
+    hearts.position.set(
+        0,
+        30,
+        -80
+    );
+
+    scene.add(hearts);
+}
+
+/* ============================================================
+   MODE SWITCHING
+============================================================ */
+
+function setMode(mode){
+
+    GAME.mode=mode;
+
+    if(mode==="galaxy"){
+
+        cityGroup.visible=false;
+
+        galaxyGroup.visible=true;
+
+        solarGroup.visible=true;
+
+        player.visible=false;
+
+        companion.visible=false;
+
+        starGroup.visible=true;
+
+        camera.position.set(
+            0,
+            30,
+            90
+        );
+
+        camera.lookAt(0,0,0);
+
+        document.getElementById(
+            "locationText"
+        ).textContent=
+            "MILKY WAY • COSMIC VIEW";
+
+    }else{
+
+        cityGroup.visible=true;
+
+        galaxyGroup.visible=false;
+
+        solarGroup.visible=false;
+
+        player.visible=true;
+
+        companion.visible=true;
+
+        starGroup.visible=false;
+
+        document.getElementById(
+            "locationText"
+        ).textContent=
+            GAME.city==="indore"
+            ?"INDORE • MADHYA PRADESH"
+            :"PATNA • BIHAR";
+
+        camera.position.set(
+            player.position.x,
+            5,
+            player.position.z+9
+        );
+    }
+}
+
+/* ============================================================
+   GALAXY ANIMATION
+============================================================ */
+
+function updateGalaxy(dt){
+
+    galaxyGroup.rotation.y+=
+        dt*.015;
+
+    blackHole.rotation.y+=
+        dt*.4;
+
+    solarGroup.rotation.y+=
+        dt*.05;
+
+    for(
+        const child
+        of solarGroup.children
+    ){
+
+        if(
+            child.userData &&
+            child.userData.orbit
+        ){
+
+            const o=
+                child.userData.orbit;
+
+            o.angle+=
+                o.speed*dt*.1;
+
+            child.position.x=
+                Math.cos(o.angle)*
+                o.radius;
+
+            child.position.z=
+                Math.sin(o.angle)*
+                o.radius;
+        }
+    }
+}
+
+/* ============================================================
+   METEOR SHOWER
+============================================================ */
+
+const meteors=[];
+
+function createMeteor(){
+
+    const meteor=new THREE.Mesh(
+        new THREE.SphereGeometry(
+            rand(.08,.25),
+            6,
+            6
+        ),
+        new THREE.MeshBasicMaterial({
+            color:0xffffff
+        })
+    );
+
+    meteor.position.set(
+        rand(-500,500),
+        rand(50,300),
+        rand(-500,500)
+    );
+
+    scene.add(meteor);
+
+    meteors.push({
+        object:meteor,
+        velocity:new THREE.Vector3(
+            rand(-20,20),
+            -rand(20,50),
+            rand(-20,20)
+        )
+    });
+}
+
+for(let i=0;i<40;i++)
+    createMeteor();
+
+function updateMeteors(dt){
+
+    for(const meteor of meteors){
+
+        meteor.object.position.addScaledVector(
+            meteor.velocity,
+            dt
+        );
+
+        if(
+            meteor.object.position.y<0
+        ){
+
+            meteor.object.position.set(
+                rand(-500,500),
+                rand(100,300),
+                rand(-500,500)
+            );
+        }
+    }
+}
+
+/* ============================================================
+   MINIMAP
+============================================================ */
+
+const mapCanvas=
+    document.getElementById(
+        "mapCanvas"
+    );
+
+const mapCtx=
+    mapCanvas.getContext("2d");
+
+function updateMinimap(){
+
+    mapCtx.clearRect(
+        0,
+        0,
+        180,
+        180
+    );
+
+    mapCtx.fillStyle="#071324";
+
+    mapCtx.fillRect(
+        0,
+        0,
+        180,
+        180
+    );
+
+    mapCtx.strokeStyle="#2d4260";
+
+    mapCtx.lineWidth=2;
+
+    mapCtx.beginPath();
+
+    mapCtx.moveTo(90,0);
+    mapCtx.lineTo(90,180);
+
+    mapCtx.moveTo(0,90);
+    mapCtx.lineTo(180,90);
+
+    mapCtx.stroke();
+
+    const px=
+        90+
+        player.position.x;
+
+    const pz=
+        90+
+        player.position.z;
+
+    mapCtx.fillStyle="#ff5c9f";
+
+    mapCtx.beginPath();
+
+    mapCtx.arc(
+        clamp(px,5,175),
+        clamp(pz,5,175),
+        5,
+        0,
+        Math.PI*2
+    );
+
+    mapCtx.fill();
+
+    mapCtx.fillStyle="#fff";
+
+    mapCtx.font="10px Arial";
+
+    mapCtx.fillText(
+        "YOU",
+        clamp(px,5,175)+6,
+        clamp(pz,5,175)
+    );
+}
+
+/* ============================================================
+   MUSIC
+============================================================ */
+
+let audioContext=null;
+let musicGain=null;
+let musicTimer=null;
+
+function playMusic(){
+
+    if(!GAME.music)
+        return;
+
+    if(audioContext)
+        return;
+
+    audioContext=
+        new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+
+    musicGain=
+        audioContext.createGain();
+
+    musicGain.gain.value=.04;
+
+    musicGain.connect(
+        audioContext.destination
+    );
+
+    const notes=[
+        261.63,
+        329.63,
+        392,
+        523.25,
+        392,
+        329.63,
+        293.66,
+        349.23
+    ];
+
+    let index=0;
+
+    musicTimer=
+        setInterval(()=>{
+
+            if(!GAME.music)
+                return;
+
+            const osc=
+                audioContext.createOscillator();
+
+            const gain=
+                audioContext.createGain();
+
+            osc.type="sine";
+
+            osc.frequency.value=
+                notes[index%notes.length];
+
+            gain.gain.setValueAtTime(
+                0,
+                audioContext.currentTime
+            );
+
+            gain.gain.linearRampToValueAtTime(
+                .25,
+                audioContext.currentTime+.05
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .001,
+                audioContext.currentTime+1.5
+            );
+
+            osc.connect(gain);
+            gain.connect(musicGain);
+
+            osc.start();
+
+            osc.stop(
+                audioContext.currentTime+1.6
+            );
+
+            index++;
+
+        },750);
+}
+
+document
+    .getElementById("musicBtn")
+    .addEventListener(
+        "click",
+        ()=>{
+            GAME.music=!GAME.music;
+
+            if(GAME.music)
+                playMusic();
+        }
+    );
+
+/* ============================================================
+   CAMERA
+============================================================ */
+
+function updateCamera(){
+
+    if(GAME.mode==="galaxy")
+        return;
+
+    const distanceBehind=
+        GAME.handHolding
+        ?8
+        :10;
+
+    const target=
+        new THREE.Vector3(
+            player.position.x,
+            player.position.y+2,
+            player.position.z
+        );
+
+    const offset=
+        new THREE.Vector3(
+            Math.sin(cameraYaw)*
+            distanceBehind,
+
+            5,
+
+            Math.cos(cameraYaw)*
+            distanceBehind
+        );
+
+    const desired=
+        target.clone()
+        .add(offset);
+
+    camera.position.lerp(
+        desired,
+        .08
+    );
+
+    camera.lookAt(target);
+}
+
+/* ============================================================
+   NEARBY UI
+============================================================ */
+
+function updateInteractionUI(){
+
+    let closest=null;
+    let dBest=3;
+
+    for(const item of interactables){
+
+        const d=
+            distance(
+                player.position,
+                item.position
+            );
+
+        if(d<dBest){
+
+            closest=item;
+            dBest=d;
+        }
+    }
+
+    const interaction=
+        document.getElementById(
+            "interaction"
+        );
+
+    if(closest){
+
+        interaction.style.display=
+            "block";
+
+    }else{
+
+        interaction.style.display=
+            "none";
+    }
+}
+
+/* ============================================================
+   RESIZE
+============================================================ */
+
+window.addEventListener(
+    "resize",
+    ()=>{
+        camera.aspect=
+            innerWidth/innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+    }
 );
+
+/* ============================================================
+   MAIN LOOP
+============================================================ */
+
+const clock=new THREE.Clock();
+
+function animate(){
+
+    requestAnimationFrame(animate);
+
+    const dt=
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+    GAME.time+=dt;
+
+    updatePlayer(dt);
+
+    updateCompanion(dt);
+
+    updateNPCs(dt);
+
+    updateVehicles(dt);
+
+    updateGalaxy(dt);
+
+    updateMeteors(dt);
+
+    updateCamera();
+
+    updateInteractionUI();
+
+    updateMinimap();
+
+    updateQuest();
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+/* ============================================================
+   STARTUP
+============================================================ */
+
+setMode("galaxy");
+
+progress();
+progress();
+progress();
+progress();
+
+setTimeout(()=>{
+
+    document.getElementById(
+        "loading"
+    ).style.opacity="0";
+
+    setTimeout(()=>{
+
+        document.getElementById(
+            "loading"
+        ).style.display="none";
+
+        document.getElementById(
+            "birthday"
+        ).style.display="flex";
+
+    },1000);
+
+},800);
+
+/* ============================================================
+   START GAME
+============================================================ */
+
+document
+    .getElementById("startButton")
+    .addEventListener(
+        "click",
+        ()=>{
+            document.getElementById(
+                "birthday"
+            ).style.display="none";
+
+            GAME.running=true;
+
+            playMusic();
+
+            setMode("city");
+
+            cinematic(
+                "WELCOME",
+                "Your date begins in our little universe."
+            );
+        }
+    );
+
+animate();
 
 </script>
 
